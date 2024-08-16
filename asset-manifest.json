@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/kana.build/static/css/main.38baf6a0.css",
-    "main.js": "/kana.build/static/js/main.36186347.js",
-    "static/js/453.b22e3e83.chunk.js": "/kana.build/static/js/453.b22e3e83.chunk.js",
-    "index.html": "/kana.build/index.html",
-    "main.38baf6a0.css.map": "/kana.build/static/css/main.38baf6a0.css.map",
-    "main.36186347.js.map": "/kana.build/static/js/main.36186347.js.map",
-    "453.b22e3e83.chunk.js.map": "/kana.build/static/js/453.b22e3e83.chunk.js.map"
+    "main.css": "/static/css/main.38baf6a0.css",
+    "main.js": "/static/js/main.f4d0f851.js",
+    "static/js/453.b22e3e83.chunk.js": "/static/js/453.b22e3e83.chunk.js",
+    "index.html": "/index.html",
+    "main.38baf6a0.css.map": "/static/css/main.38baf6a0.css.map",
+    "main.f4d0f851.js.map": "/static/js/main.f4d0f851.js.map",
+    "453.b22e3e83.chunk.js.map": "/static/js/453.b22e3e83.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.38baf6a0.css",
-    "static/js/main.36186347.js"
+    "static/js/main.f4d0f851.js"
   ]
 }
