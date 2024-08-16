@@ -1,6 +1,6 @@
-# romaji.build
+# kana.build
 
-Practice your Japanese with romaji.build!
+Practice your Japanese with kana.build!
 
 ```
 ⠀⠀⠀⢸⣦⡀⠀⠀⠀⠀⢀⡄
