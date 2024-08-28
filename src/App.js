@@ -42,10 +42,34 @@ const TINY_KANA = {
   "ォ": "オ"
 }
 
-const kaomoji = [
-  
-"(ﾉ´ з `)ノ	(♡μ_μ)",	"(*^^*)♡	☆⌒ヽ(*'､^*)chu"
-]
+const KAOMOJI = [
+  "(o^▽^o)", "ヽ(・∀・)ﾉ", "(´｡• ω •｡`)", "(￣ω￣)", "(o･ω･o)", "(＠＾◡＾)",
+  "ヽ(*・ω・)ﾉ", "(o´▽`o)", "( ´ ω ` )", "(≧◡≦)",
+  "(´• ω •`)", "(＾▽＾)", "╰(▔∀▔)╯", "(*^‿^*)", "(✯◡✯)", "٩(◕‿◕)۶",
+  "(*≧ω≦*)", "＼(≧▽≦)／", "ヽ(o＾▽＾o)ノ", "☆ ～('▽^人)", "(*°▽°*)",
+  "٩(｡•́‿•̀｡)۶", "(✧ω✧)", "ヽ(*⌒▽⌒*)ﾉ", "(´｡• ᵕ •｡`)", "( ´ ▽ ` )", "╰(*´︶`*)╯",
+  "ヽ(>∀<☆)ノ", "(っ˘ω˘ς )", "＼(￣▽￣)／", "(*¯︶¯*)", "＼(＾▽＾)／", "(o˘◡˘o)",
+  "\(★ω★)/", "\(^ヮ^)/", "(〃＾▽＾〃)", "(╯✧▽✧)╯", "o(>ω<)o", "o( ❛ᴗ❛ )o",
+  "(ﾉ´ヮ`)ﾉ*: ･ﾟ", "(bᵔ▽ᵔ)b", "(๑˃ᴗ˂)ﻭ", "(๑˘︶˘๑)", "(*꒦ິ꒳꒦ີ)", "°˖✧◝(⁰▿⁰)◜✧˖°",
+  "(´･ᴗ･ ` )", "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧", "(.❛ ᴗ ❛.)", "(￢‿￢ )", "( ˙▿˙ )", "＼(٥⁀▽⁀ )／",
+  "( ´ ▿ ` )", "(๑>◡<๑)", "( = ⩊ = )", "⸜( ´ ꒳ ` )⸝", "⸜(⸝⸝⸝´꒳`⸝⸝⸝)⸝", "⸜(*ˊᗜˋ*)⸝",
+  "⸜( *ˊᵕˋ* )⸝", "(ﾉ´ з `)ノ", "(♡-_-♡)", "(￣ε￣＠)", "ヽ(♡‿♡)ノ", "( ´ ∀ `)ノ～ ♡",
+   "(´｡• ᵕ •｡`) ♡", "(´ ω `♡)", "(ღ˘⌣˘ღ)", "(♡°▽°♡)", "♡ ～('▽^人)",
+   "(´• ω •`) ♡", "( ´ ▽ ` ).｡ｏ♡", "╰(*´︶`*)╯♡", "(*˘︶˘*).｡.:*♡", "(♡˙︶˙♡)",
+   "♡＼(￣▽￣)／♡", "(っ˘з(˘⌣˘ ) ♡", "(´♡‿♡`) (°◡°♡)", "Σ>―(〃°ω°〃)♡→", "(눈_눈)",
+   "(°ㅂ°╬)","(ノ°益°)ノ", "(҂ `з´ )", "(҂` ﾛ ´)凸", "(凸ಠ益ಠ)凸", "↑_(ΦwΦ)Ψ",
+   "(ﾉಥ益ಥ)ﾉ", "(″ロ゛)", "(・人・)", "＼(º □ º l l)/", "▓▒░(°◡°)░▒▓", "(￣ω￣;)",
+   "(-_-;)・・・", "┐('～`;)┌", "(・_・ヾ", "(〃￣ω￣〃ゞ", "(・_・;)", "╮(￣ω￣;)╭",
+   "ლ(ಠ_ಠ ლ)", "ლ(¯ロ¯'ლ)", "(*・ω・)ﾉ", "(￣▽￣)ノ", "(°▽°)/", "( ´ ∀ ` )ﾉ",
+    "(´• ω •`)ﾉ", "( ° ∀ ° )ﾉﾞ", "ヾ(*'▽'*)", "(づ￣ ³￣)づ", "(つ≧▽≦)つ",
+    "(づ ◕‿◕ )づ", "(⊃｡•́‿•̀｡)⊃", "(つ . •́ _ʖ •̀ .)つ", "(っಠ‿ಠ)っ", "⊂(´• ω •`⊂)",
+    "⊂(￣▽￣)⊃", "⊂( ´ ▽ ` )⊃", "(ノ= ⩊ = )ノ", "(っ ᵔ◡ᵔ)っ", "(｡•̀ᴗ-)✧", "(>ᴗ•)",
+    " ʘ‿ʘ)╯", "(=^･ｪ･^=)", "(=`ω´=)", "(=^ ◡ ^=)", "(=^-ω-^=)", "ヾ(=`ω´=)ノ",
+    "(＾• ω •＾)", "ฅ(•ㅅ•❀)ฅ", "ฅ(• ɪ •)ฅ", "(^◔ᴥ◔^)", "( Φ ω Φ )", "ʕ ᵔᴥᵔ ʔ",
+    "ʕ •ᴥ• ʔ", "ʕ •̀ ω •́ ʔ", "ʕ •̀ o •́ ʔ", "૮ ˶ᵔ ᵕ ᵔ˶ ა", "૮₍ ˶• ༝ •˶ ₎ა",
+    "(っ˘ڡ˘ς)", "( o˘◡˘o) ┌iii┐", "(　'ω')旦~~", "( ˘▽˘)っ♨", "ଘ(੭ˊᵕˋ)੭* ੈ✩‧₊˚"]
+
+
 
 const KanaMenuOverlay = ({ isOpen, onClose, selected, setSelectedKana }) => {
   const [alphabet, setAlphabet] = useState("hiragana");
@@ -251,13 +275,14 @@ const KanaMenuOverlay = ({ isOpen, onClose, selected, setSelectedKana }) => {
 
 
 function App() {
-  const [activeWordIndex, setActiveWordIndex] = useState(0);
+  const [activeWordIndex, setActiveWordIndex] = useState(0)
   const [selectedKana, setSelectedKana] = useState(new Set([]))
   const [wordList, setWordList] = useState(new Set([]))
   const [showDetails, setShowDetails] = useState(false)
   const [dictionary, setDictionary] = useState([])
   const [entityCodes, setEntityCodes] = useState({})
   const [kanaMenuOpen, setKanaMenuOpen] = useState(false)
+  const [subtitle, setSubtitle] = useState(KAOMOJI[Math.floor(KAOMOJI.length * Math.random(KAOMOJI.length))])
 
   const readLocalStorage = useMemo(
     () => {
@@ -294,9 +319,12 @@ function App() {
     if (showDetails) {
       if (activeWordIndex === wordList.size - 1) {
         setActiveWordIndex(0)
-      } else {
         console.log("Reached end of word list - starting over from beginning")
+      } else {
         setActiveWordIndex(prev => prev + 1)
+        let newSubtitle = KAOMOJI[Math.floor(KAOMOJI.length * Math.random(KAOMOJI.length))];
+        console.log("new subtitle: " + newSubtitle)
+        setSubtitle(newSubtitle)
       }
     }
 
@@ -316,14 +344,7 @@ function App() {
         return;
       }
 
-      if (showDetails) {
-        if (activeWordIndex === wordList.size - 1) {
-          return;
-        }
-        setActiveWordIndex(prev => prev + 1)
-      }
-
-      setShowDetails(prev => !prev)
+      nextWord()
     }
 
     window.document.addEventListener('keyup', handleKeyUp);
@@ -395,7 +416,8 @@ function App() {
     <div className="app-container">
       <div className="banner-container">
         <div className="banner-title">kana.build</div>
-        <div className="banner-subtitle">( • ̀ω•́ ) ✧ (●´ω｀●)</div>
+        <div className="banner-subtitle">{subtitle}</div>
+        {/* <div className="banner-subtitle">( • ̀ω•́ ) ✧ (●´ω｀●)</div> */}
         {/* <div className="banner-title">nihongo.build</div>
         <div className="banner-subtitle">kana word building tool</div> */}
       </div>
