@@ -1,6 +1,18 @@
 :root {
   --text-color: #626262;
   --text-color-light: #b5afa7;
+  --text-color-dark: #c3c3c3;
+  --text-color-darker: #414649;
+  --selected-kana-bg: #29343b;
+  --background-color: white;
+
+  /* --text-color: #888888;
+  --text-color-light: #b5afa7;
+  --text-color-dark: #d5d5d5;
+  --text-color-darker: #ffffff;
+  --selected-kana-bg: #000000;
+  --background-color: #282828; */
+
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
@@ -14,6 +26,7 @@
 #root {
   height: 100%;
   width: 100% !important;
+  background-color: var(--background-color);
 }
 
 body {
@@ -53,7 +66,7 @@ body {
 
 .banner-subtitle {
   font-size: 1.5em;
-  color: #dfdfdf;
+  color: var(--text-color-light);
   white-space: pre;
 
 }
@@ -61,7 +74,7 @@ body {
 /* active-word */
 #starting-text {
   font-size: 1.75em;
-  color: #dfdfdf;
+  color: var(--text-color-light);
 }
 
 #active-word {
@@ -120,16 +133,15 @@ body {
   top: 0;
   overflow: hidden;
   position: fixed;
-  background-color: white;
+  background-color: var(--background-color);
   animation-name: slide-up;
   animation-duration: 1s;
-
 }
 
 .kana-menu-controls-container {
   display: flex;
   flex-direction: row;
-  padding-top: 3.75vh;
+  padding-top: 2.5vh;
   width: 22.727272vh;
   margin: auto;
   padding-left: 2vh;
@@ -140,6 +152,7 @@ body {
   cursor: pointer;
   display: flex;
   align-self: start;
+  color: var(--text-color-dark);
 }
 
 .kana-menu-alphabet-button {
@@ -147,12 +160,12 @@ body {
   width: fit-content;
   margin: auto;
   cursor: pointer;
-  border: 1px solid #414649;
   border-radius: 0.6em;
   padding: 0.4em;
   padding-left: 1.4em;
   padding-right: 1.4em;
-
+  border: 1px solid var(--text-color-dark);
+  color: var(--text-color-dark);
 }
 
 .kana-character-menu-container {
@@ -171,7 +184,7 @@ body {
   justify-content: center;
   padding-left: 1vh;
   cursor: pointer;
-  color: #c3c3c3;
+  color: var(--text-color-dark);
   align-content: center;
   justify-content: center;
 }
@@ -192,38 +205,24 @@ body {
   justify-content: center;
   padding-left: 1vh;
   cursor: pointer;
-  color: #c3c3c3;
+  color: var(--text-color-dark);
   align-content: center;
   justify-content: center;
   margin: auto;
 }
 
 .selected-romaji-label {
-  color: #414649;
+  color: var(--text-color-darker);
   font-weight: bold;
 
 }
 
-
 .kana-menu-romaji-label:hover {
-  color: #5b5f62;
+  color: var(--text-color-darker);
   font-weight: bold;
 }
 
 .kana-menu-character {
-  /* border-radius: 10px;
-  border: 1px solid #c3c3c3;
-  box-sizing: border-box;
-  width: 4vh;
-  height: 4vh;
-  border: 1px solid #414649;
-  font-size: 1.4vh;
-  align-content: center;
-  justify-content: center;
-  padding-left: 1vh;
-  cursor: pointer;
-  background-color: #333333; */
-
   width: 4vh;
   height: 4vh;
   font-size: 2.2vh;
@@ -231,19 +230,15 @@ body {
   justify-content: center;
   padding-left: 1vh;
   cursor: pointer;
-  color: #c3c3c3; 
+  color: var(--text-color-dark);
 }
 
 .kana-menu-character:hover {
-  /* border: 1px solid #414649;
-  background-color: #c3c3c3; */
-  color: #414649;
-  
+  color: var(--text-color-darker);
 }
 
 .selected-kana {
-  /* border: 1px solid #414649; */
-  background-color: #29343b;
-  color: #c3c3c3 !important;
+  background-color: var(--selected-kana-bg);
+  color: var(--text-color-dark) !important;
   border-radius: 50px;
 }
