@@ -258,6 +258,7 @@ const KanaMenuOverlay = ({ isOpen, onClose, selected, setSelectedKana }) => {
       <div className="kana-menu-controls-container">
         <div className="kana-menu-exit-button" onClick={onClose}>←</div>
         <div className="kana-menu-alphabet-button" onClick={toggleAlphabet}>{alphabet}</div>
+        <div className="kana-menu-list-button" onClick={onClose}>☰</div>
       </div>
       <div className="kana-character-menu-container">
         {
