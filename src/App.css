@@ -3,14 +3,14 @@
   --text-color-light: #b5afa7;
   --text-color-dark: #c3c3c3;
   --text-color-darker: #414649;
-  --selected-kana-bg: #29343b;
+  --selected-kana-bg: #676767;
   --background-color: white;
 
-  /* --text-color: #888888;
-  --text-color-light: #b5afa7;
+  /* --text-color: #dfdfdf;
+  --text-color-light: #b5b5b5;
   --text-color-dark: #d5d5d5;
   --text-color-darker: #ffffff;
-  --selected-kana-bg: #000000;
+  --selected-kana-bg: #4c4c4c;
   --background-color: #282828; */
 
   -webkit-user-select: none;
@@ -58,14 +58,15 @@ body {
 }
 
 .banner-title {
-  font-size: 2.5em;
+  font-size: 1.6em;
+  letter-spacing: .2em;
   padding: 0.4em;
   color: var(--text-color);
 
 }
 
 .banner-subtitle {
-  font-size: 1.5em;
+  font-size: 1.1em;
   color: var(--text-color-light);
   white-space: pre;
 
@@ -90,6 +91,7 @@ body {
 #active-word-definition {
     color: var(--text-color);
     font-size: 2.75vh;
+    letter-spacing: .05em;
 }
 
 .active-word-container {
@@ -112,8 +114,10 @@ body {
 
 .menu-item {
   color: var(--text-color);
-  font-size: 1.5em;
+  font-size: 1.3em;
   cursor: pointer;
+  margin-top: 20px;
+  letter-spacing: .05em;
 }
 
 .menu-item:hover {
@@ -148,6 +152,14 @@ body {
 }
 
 .kana-menu-exit-button {
+  font-size: 2vh;
+  cursor: pointer;
+  display: flex;
+  align-self: start;
+  color: var(--text-color-dark);
+}
+
+.kana-menu-list-button {
   font-size: 2vh;
   cursor: pointer;
   display: flex;
