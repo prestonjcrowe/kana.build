@@ -1,6 +1,6 @@
 # kana.build
 
-Practice your Japanese with kana.build!
+Practice your Japanese with [kana.build](https://www.kana.build/)!
 
 ```
 ⠀⠀⠀⢸⣦⡀⠀⠀⠀⠀⢀⡄
