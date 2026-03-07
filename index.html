@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
   <title>kana.build</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ffffff">
   
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/wanakana"></script>
@@ -142,7 +140,12 @@
     }
     .kana-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
     
-    .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 2vh 4vh; max-width: 40vh; margin: auto; }
+    .kana-menu-controls-container { 
+      display: flex; justify-content: space-between; align-items: center; 
+      padding: 5vh 0 3vh 0; /* Pushes the menu down to perfectly center vertically */
+      width: 27vh; /* Exactly matches the grid width to align the edges */
+      margin: auto; 
+    }
     .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 2.5vh; }
     .kana-menu-alphabet-button { font-size: 1.6vh; cursor: pointer; border-radius: 0.6em; padding: 0.4em 1.4em; border: 1px solid var(--text-color-dark); color: var(--text-color-dark); }
     .hamburger-container { position: relative; }
