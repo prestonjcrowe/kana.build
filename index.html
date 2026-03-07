@@ -65,18 +65,28 @@
     #app { 
       height: 100%; 
       width: 100%; 
-      position: relative; /* Acts as the absolute anchor for the dynamic viewport */
+      position: relative; 
     }
     
     .app-container { display: grid; grid-template-rows: 1fr 1fr 1fr; height: 100%; width: 100%; }
-    .banner-container { display: flex; flex-direction: column; align-items: center; padding-top: 5em; }
+    
+    .banner-container { 
+      display: flex; flex-direction: column; align-items: center; 
+      padding-top: 5em; transition: padding-top 0.3s ease; 
+    }
     .banner-title { font-size: 1.6em; letter-spacing: .2em; padding: 0.4em; }
     .banner-subtitle { font-size: 1.1em; color: var(--text-color-light); white-space: pre; }
 
-    /* Default row-gap is 25px, shrinks to 10px when keyboard is open via .is-keyboard-open class */
-    .active-word-container { display: flex; flex-direction: column; align-items: center; padding: 25px; row-gap: 25px; cursor: pointer; transition: row-gap 0.3s ease; }
-    .active-word-container.is-keyboard-open { row-gap: 10px; }
+    .active-word-container { 
+      display: flex; flex-direction: column; align-items: center; 
+      padding: 25px; row-gap: 25px; cursor: pointer; 
+      transition: row-gap 0.3s ease, padding 0.3s ease; 
+    }
     
+    /* Aggressive spacing reduction when the keyboard is open */
+    .app-container.is-keyboard-open .banner-container { padding-top: 2em; }
+    .app-container.is-keyboard-open .active-word-container { row-gap: 8px; padding-top: 5px; padding-bottom: 5px; }
+
     #active-word { font-size: 4vh; text-align: center; }
     .inline-kanji { font-size: 0.75em; color: var(--text-color-light); font-weight: 300; margin-left: 0.2em; }
     
@@ -86,20 +96,13 @@
     .correction-hint { color: var(--text-color-light); font-size: 0.8em; margin-left: 12px; font-weight: 300; }
     
     #active-word-definition-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      column-gap: 10px;
+      display: flex; align-items: center; justify-content: center; column-gap: 10px;
     }
     #active-word-definition { font-size: 2.75vh; letter-spacing: .05em; text-align: center; }
     
     .inline-star {
-      font-size: 3vh;
-      color: var(--text-color-light);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
+      font-size: 3vh; color: var(--text-color-light); cursor: pointer;
+      display: flex; align-items: center; flex-shrink: 0;
     }
     .inline-star.is-starred { color: var(--text-color-darker); }
 
@@ -107,42 +110,25 @@
     @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--text-color); } }
     .hidden-input { position: absolute; top: 50%; left: 50%; opacity: 0; pointer-events: none; z-index: -1; }
 
-    /* Centered Footer Menu layout */
     .menu-container { 
-      position: absolute; 
-      bottom: 30px; 
-      left: 50%; 
-      transform: translateX(-50%);
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      row-gap: 15px; 
-      z-index: 5;
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; row-gap: 15px; z-index: 5;
     }
     .menu-item { font-size: 1.3em; cursor: pointer; letter-spacing: .05em; color: var(--text-color); }
     .star-button-centered { color: var(--text-color-light); font-size: 2em; cursor: pointer; }
     .star-button-centered.is-starred { color: var(--text-color-darker); }
     
-    .streak-cat-container { position: absolute; bottom: 10px; left: 10px; color: var(--text-color-light); pointer-events: none; }
-    pre.ascii-cat { font-family: monospace; font-size: 11px; line-height: 1.2; margin: 0; }
-    
-    /* Pinned perfectly horizontal with the settings block */
     .word-counter { position: absolute; bottom: 30px; left: 30px; color: var(--text-color-light); font-size: 1.1em; z-index: 5; }
     .list-floating-button { position: absolute; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; }
 
-    /* Menus are completely cloaked when closed to prevent bleed-through during keyboard resize */
     .overlay-menu-container { 
       height: 100%; width: 100%; left: 0; top: 0; position: absolute; 
       background-color: var(--background-color); 
       transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s; 
-      transform: translateY(100%); 
-      z-index: 10; display: flex; align-items: center; justify-content: center;
+      transform: translateY(100%); z-index: 10; display: flex; align-items: center; justify-content: center;
       opacity: 0; visibility: hidden; pointer-events: none;
     }
-    .overlay-menu-container.is-open { 
-      transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; 
-    }
-    
+    .overlay-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
     .overlay-menu-content { display: flex; flex-direction: column; align-items: center; row-gap: 30px; width: 100%; }
 
     .settings-toggle-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 240px; cursor: pointer; }
@@ -157,9 +143,7 @@
       transform: translateY(100%); z-index: 15;
       opacity: 0; visibility: hidden; pointer-events: none;
     }
-    .kana-menu-container.is-open { 
-      transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; 
-    }
+    .kana-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
     
     .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 2vh 4vh; max-width: 40vh; margin: auto; }
     .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 2.5vh; }
@@ -179,13 +163,13 @@
   <div id="app">
     <input type="text" ref="keyboardTrigger" class="hidden-input" v-model="userInput" @keydown.enter="handleEnter" autocapitalize="none" />
 
-    <div class="app-container">
+    <div class="app-container" :class="{ 'is-keyboard-open': isKeyboardOpen }">
       <div class="banner-container">
         <div class="banner-title">kana.build</div>
         <div class="banner-subtitle">{{ subtitle }}</div>
       </div>
 
-      <div class="active-word-container" :class="{ 'is-keyboard-open': isKeyboardOpen }" @click="handleScreenTap">
+      <div class="active-word-container" @click="handleScreenTap">
         <div v-if="loading">loading dictionary...</div>
         <div v-else-if="wordList.length > 0" id="active-word">
           {{ activeWord }}<span class="inline-kanji" v-if="showKanjiSetting && showDetails && activeKanji">[{{ activeKanji }}]</span>
@@ -444,18 +428,21 @@
         };
 
         onMounted(async () => {
-          let maxVh = typeof window !== 'undefined' ? window.innerHeight : 1000;
+          // Robust keyboard detection by comparing against a running max height
+          let baseHeight = window.innerHeight || document.documentElement.clientHeight;
           
-          // Dynamic viewport height scaling & keyboard detection
           const setVh = () => {
-            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            if (vh > maxVh) maxVh = vh; // Remember the tallest state of the screen
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            const currentHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            if (currentHeight > baseHeight) {
+              baseHeight = currentHeight; // Automatically corrects if screen is rotated or resized up
+            }
             
-            // If the screen shrinks to less than 80% of its max height, the keyboard is likely up
-            isKeyboardOpen.value = vh < (maxVh * 0.8);
+            document.documentElement.style.setProperty('--vh', `${currentHeight}px`);
             
-            window.scrollTo(0, 0); // Prevent browser scroll jumps
+            // If the screen loses more than 150px, the keyboard is definitely up
+            isKeyboardOpen.value = (baseHeight - currentHeight) > 150;
+            
+            window.scrollTo(0, 0); 
           };
           
           setVh();
