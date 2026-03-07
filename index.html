@@ -33,7 +33,13 @@
       --success-color: #69db7c;
     }
 
-    * { box-sizing: border-box; padding: 0; margin: 0; }
+    * { 
+      box-sizing: border-box; 
+      padding: 0; 
+      margin: 0; 
+      -webkit-tap-highlight-color: transparent; /* This removes the blue tap highlight on mobile */
+    }
+    
     body, html { height: 100%; width: 100%; background-color: var(--background-color); color: var(--text-color); font-family: sans-serif; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease; }
     #app { height: 100%; width: 100%; }
     .app-container { display: grid; grid-template-rows: 1fr 1fr 1fr; height: 100%; width: 100%; }
@@ -60,7 +66,7 @@
     .star-button-centered { color: var(--text-color-light); font-size: 2em; cursor: pointer; }
     .star-button-centered.is-starred { color: var(--text-color-darker); }
     
-    .streak-cat-container { fixed; bottom: 10px; left: 10px; color: var(--text-color-light); pointer-events: none; position: fixed; }
+    .streak-cat-container { position: fixed; bottom: 10px; left: 10px; color: var(--text-color-light); pointer-events: none; }
     pre.ascii-cat { font-family: monospace; font-size: 11px; line-height: 1.2; margin: 0; }
     .word-counter { position: fixed; bottom: 30px; left: 30px; color: var(--text-color-light); font-size: 1.1em; }
     .list-floating-button { position: fixed; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; }
@@ -222,7 +228,6 @@
         const activeKanji = computed(() => activeWordData.value?.kanji || "");
         const activeDefinition = computed(() => activeWordData.value?.definition || "");
 
-        // --- DASH FIX / FLATTEN ROMAJI LOGIC ---
         const flattenRomaji = (text) => {
           const tokens = wanakana.tokenize(text);
           return tokens.map((token, idx) => {
@@ -266,7 +271,6 @@
           return base.padEnd(13, ' ');
         });
 
-        // --- SCOPING FIX FOR SELECT ALL ---
         const isAllSelected = computed(() => {
           const currentValid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
           return currentValid.length > 0 && currentValid.every(c => selectedKana.has(c));
@@ -407,7 +411,6 @@
         const toggleGroup = (label) => {
           const grid = alphabet.value === 'hiragana' ? hChars : kChars;
           const idx = grid.indexOf(label);
-          // REMOVED THE DASH HERE to properly map it as a row
           const isVowelCol = "aiueo".includes(label); 
           const toToggle = [];
           
