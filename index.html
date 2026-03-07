@@ -49,7 +49,7 @@
       box-sizing: border-box; 
       padding: 0; 
       margin: 0; 
-      -webkit-tap-highlight-color: transparent; /* This removes the blue tap highlight on mobile */
+      -webkit-tap-highlight-color: transparent; 
     }
     
     body, html { 
@@ -85,11 +85,20 @@
 
     .cursor { display: inline-block; width: 2px; height: 3vh; background-color: var(--text-color); margin-left: 2px; animation: blink 1s step-end infinite; }
     @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--text-color); } }
-    
-    /* Centered so browser doesn't try to scroll the page when focused */
     .hidden-input { position: absolute; top: 50%; left: 50%; opacity: 0; pointer-events: none; z-index: -1; }
 
-    .menu-container { display: flex; flex-direction: column; align-items: center; padding: 50px; row-gap: 15px; }
+    /* Centered Footer Menu layout */
+    .menu-container { 
+      position: absolute; 
+      bottom: 30px; 
+      left: 50%; 
+      transform: translateX(-50%);
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      row-gap: 15px; 
+      z-index: 5;
+    }
     .menu-item { font-size: 1.3em; cursor: pointer; letter-spacing: .05em; color: var(--text-color); }
     .star-button-centered { color: var(--text-color-light); font-size: 2em; cursor: pointer; }
     .star-button-centered.is-starred { color: var(--text-color-darker); }
@@ -97,12 +106,23 @@
     .streak-cat-container { position: absolute; bottom: 10px; left: 10px; color: var(--text-color-light); pointer-events: none; }
     pre.ascii-cat { font-family: monospace; font-size: 11px; line-height: 1.2; margin: 0; }
     
-    /* Changed from fixed to absolute to respect keyboard boundaries */
-    .word-counter { position: absolute; bottom: 30px; left: 30px; color: var(--text-color-light); font-size: 1.1em; }
-    .list-floating-button { position: absolute; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; }
+    /* Pinned perfectly horizontal with the settings block */
+    .word-counter { position: absolute; bottom: 30px; left: 30px; color: var(--text-color-light); font-size: 1.1em; z-index: 5; }
+    .list-floating-button { position: absolute; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; }
 
-    .overlay-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); transform: translateY(100%); z-index: 10; display: flex; align-items: center; justify-content: center; }
-    .overlay-menu-container.is-open { transform: translateY(0); }
+    /* Menus are completely cloaked when closed to prevent bleed-through during keyboard resize */
+    .overlay-menu-container { 
+      height: 100%; width: 100%; left: 0; top: 0; position: absolute; 
+      background-color: var(--background-color); 
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s; 
+      transform: translateY(100%); 
+      z-index: 10; display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; pointer-events: none;
+    }
+    .overlay-menu-container.is-open { 
+      transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; 
+    }
+    
     .overlay-menu-content { display: flex; flex-direction: column; align-items: center; row-gap: 30px; width: 100%; }
 
     .settings-toggle-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 240px; cursor: pointer; }
@@ -111,8 +131,16 @@
     .toggle-knob { width: 16px; height: 16px; background-color: var(--background-color); border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
     .toggle-switch.is-active .toggle-knob { transform: translateX(22px); }
 
-    .kana-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: 0.4s; transform: translateY(100%); z-index: 15; }
-    .kana-menu-container.is-open { transform: translateY(0); }
+    .kana-menu-container { 
+      height: 100%; width: 100%; left: 0; top: 0; position: absolute; 
+      background-color: var(--background-color); transition: transform 0.4s, opacity 0.4s; 
+      transform: translateY(100%); z-index: 15;
+      opacity: 0; visibility: hidden; pointer-events: none;
+    }
+    .kana-menu-container.is-open { 
+      transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; 
+    }
+    
     .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 2vh 4vh; max-width: 40vh; margin: auto; }
     .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 2.5vh; }
     .kana-menu-alphabet-button { font-size: 1.6vh; cursor: pointer; border-radius: 0.6em; padding: 0.4em 1.4em; border: 1px solid var(--text-color-dark); color: var(--text-color-dark); }
@@ -162,24 +190,26 @@
 
         <div id="active-word-definition">{{ showDetails ? activeDefinition : "" }}</div>
       </div>
-
-      <div class="menu-container">
-        <div class="star-button-centered" v-if="wordList.length > 0" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
-          {{ isStarred ? '★' : '☆' }}
-        </div>
-        <div class="menu-item" @click="settingsOpen = true">settings</div>
-      </div>
-
-      <div v-if="keyboardInputSetting" class="word-counter">
-        streak: {{ streak }}
-      </div>
       
-      <div v-else class="word-counter" v-if="wordFilter !== 'all' && wordList.length > 0">
-        {{ activeWordIndex + 1 }} / {{ wordList.length }}
-      </div>
-
-      <div class="list-floating-button" @click="listOpen = true">{{ currentListName }}</div>
+      <div></div> 
     </div>
+
+    <div class="menu-container">
+      <div class="star-button-centered" v-if="wordList.length > 0" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
+        {{ isStarred ? '★' : '☆' }}
+      </div>
+      <div class="menu-item" @click="settingsOpen = true">settings</div>
+    </div>
+
+    <div v-if="keyboardInputSetting" class="word-counter">
+      streak: {{ streak }}
+    </div>
+
+    <div v-else class="word-counter" v-if="wordFilter !== 'all' && wordList.length > 0">
+      {{ activeWordIndex + 1 }} / {{ wordList.length }}
+    </div>
+
+    <div class="list-floating-button" @click="listOpen = true">{{ currentListName }}</div>
 
     <div class="overlay-menu-container" :class="{ 'is-open': listOpen }">
       <div class="overlay-menu-content">
@@ -288,13 +318,6 @@
         const isStarred = computed(() => starredWords.has(activeWord.value));
         const currentListName = computed(() => availableLists[wordFilter.value]);
 
-        const catFace = computed(() => streak.value === 0 ? "A " : "∀");
-
-        const paddedStreakText = computed(() => {
-          const base = `streak: ${streak.value}`;
-          return base.padEnd(13, ' ');
-        });
-
         const isAllSelected = computed(() => {
           const currentValid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
           return currentValid.length > 0 && currentValid.every(c => selectedKana.has(c));
@@ -308,14 +331,6 @@
           kanaHamburgerOpen.value = false;
         };
 
-        const animateCat = async () => {
-          for (let i = 0; i < 5; i++) {
-            catSlash.value = catSlash.value === "/" ? "\\" : "/";
-            await new Promise(r => setTimeout(r, 100));
-          }
-          catSlash.value = "/";
-        };
-
         const handleEnter = () => {
           if (!keyboardInputSetting.value) return;
           if (showDetails.value) {
@@ -323,7 +338,6 @@
           } else {
             if (!hasTypingErrors.value) {
               streak.value++;
-              animateCat();
               correctSound.currentTime = 0;
               correctSound.play().catch(e => console.warn("Audio blocked by browser"));
             } else {
@@ -477,7 +491,7 @@
           dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, kanaOpen, kanaHamburgerOpen,
           keyboardInputSetting, showKanjiSetting, darkModeSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
           activeWord, activeKanji, activeDefinition, activeRomajiDisplay, isStarred, currentListName, feedbackChars, hasTypingErrors, 
-          handleEnter, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, catSlash, animateCat, catFace, paddedStreakText,
+          handleEnter, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, 
           isAllSelected, toggleSelectAll, activeRomajiTarget, toggleKana, toggleGroup, closeKanaMenu,
           isKana: wanakana.isKana,
           toggleAlphabet: () => { alphabet.value = alphabet.value === 'hiragana' ? 'katakana' : 'hiragana'; }
