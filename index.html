@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
   <title>kana.build</title>
   
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffffff">
+  
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/wanakana"></script>
   <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
@@ -142,8 +145,8 @@
     
     .kana-menu-controls-container { 
       display: flex; justify-content: space-between; align-items: center; 
-      padding: 5vh 0 3vh 0; /* Pushes the menu down to perfectly center vertically */
-      width: 27vh; /* Exactly matches the grid width to align the edges */
+      padding: 4vh 0.5vh 0 4.5vh; 
+      width: 27vh; 
       margin: auto; 
     }
     .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 2.5vh; }
@@ -153,6 +156,8 @@
     .hamburger-dropdown { position: absolute; top: 100%; right: 0; margin-top: 1vh; background-color: var(--background-color); border: 1px solid var(--text-color-dark); border-radius: 0.6em; padding: 1.5vh 2vh; box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 20; white-space: nowrap; }
     .hamburger-option { color: var(--text-color-dark); font-size: 1.6vh; cursor: pointer; padding: 0.5vh 0; }
     .hamburger-option:hover { color: var(--text-color-darker); font-weight: bold; }
+    
+    /* Touch action none prevents page scrolling while dragging over the grid */
     .kana-character-menu-container { padding-top: 2vh; display: grid; grid-template-columns: repeat(6, 1fr); margin: auto; gap: 0.6vh; width: fit-content; touch-action: none; }
     .kana-menu-romaji-label { font-size: 1.4vh; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color-dark); height: 4vh; }
     .kana-menu-character { width: 4vh; height: 4vh; font-size: 2.2vh; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color-dark); border-radius: 50%; }
@@ -253,11 +258,16 @@
           </div>
         </div>
       </div>
-      <div class="kana-character-menu-container">
-        <div v-for="char in (alphabet === 'hiragana' ? hChars : kChars)">
+      <div class="kana-character-menu-container"
+           @pointerdown="startDrag" 
+           @pointermove="handleDrag" 
+           @pointerup="stopDrag"
+           @pointerleave="stopDrag"
+           @pointercancel="stopDrag">
+        <div v-for="(char, index) in (alphabet === 'hiragana' ? hChars : kChars)" :key="index">
           <div v-if="char === ' '"></div>
-          <div v-else-if="!isKana(char)" class="kana-menu-romaji-label" @click="toggleGroup(char)">{{ char }}</div>
-          <div v-else class="kana-menu-character" :class="{ 'selected-kana': selectedKana.has(char) }" @click="toggleKana(char)">{{ char }}</div>
+          <div v-else-if="!isKana(char)" class="kana-menu-romaji-label" @click.stop="toggleGroup(char)">{{ char }}</div>
+          <div v-else class="kana-menu-character" :class="{ 'selected-kana': selectedKana.has(char) }" :data-char="char">{{ char }}</div>
         </div>
       </div>
     </div>
@@ -278,6 +288,11 @@
         const alphabet = ref("hiragana"), currentCSV = ref([]);
         const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
         const isKeyboardOpen = ref(false);
+
+        // Drag state variables
+        const isDragging = ref(false);
+        const dragAction = ref(null);
+        const lastToggledChar = ref(null);
 
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
         const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
@@ -320,12 +335,9 @@
         });
 
         const hasTypingErrors = computed(() => flattenRomaji(userInput.value) !== activeFlattenedTarget.value);
-
         const isStarred = computed(() => starredWords.has(activeWord.value));
         const currentListName = computed(() => availableLists[wordFilter.value]);
-
         const catFace = computed(() => streak.value === 0 ? "A " : "∀");
-
         const paddedStreakText = computed(() => {
           const base = `streak: ${streak.value}`;
           return base.padEnd(13, ' ');
@@ -422,8 +434,39 @@
           activeWordIndex.value = 0; showDetails.value = false;
         };
 
+        // Pointer event drag logic
+        const startDrag = (e) => {
+          const char = e.target.dataset.char;
+          if (!char) return;
+          isDragging.value = true;
+          dragAction.value = selectedKana.has(char) ? 'remove' : 'add';
+          if (dragAction.value === 'add') selectedKana.add(char);
+          else selectedKana.delete(char);
+          lastToggledChar.value = char;
+          e.target.setPointerCapture(e.pointerId);
+        };
+
+        const handleDrag = (e) => {
+          if (!isDragging.value) return;
+          const el = document.elementFromPoint(e.clientX, e.clientY);
+          const char = el?.dataset?.char;
+          if (char && char !== lastToggledChar.value) {
+            if (dragAction.value === 'add') selectedKana.add(char);
+            else selectedKana.delete(char);
+            lastToggledChar.value = char;
+          }
+        };
+
+        const stopDrag = () => { 
+          if (isDragging.value) {
+            isDragging.value = false; 
+            dragAction.value = null; 
+            lastToggledChar.value = null; 
+            updateWords(); 
+          }
+        };
+
         onMounted(async () => {
-          // Robust keyboard detection by comparing against a running max height
           let baseHeight = window.innerHeight || document.documentElement.clientHeight;
           
           const setVh = () => {
@@ -433,9 +476,7 @@
             }
             
             document.documentElement.style.setProperty('--vh', `${currentHeight}px`);
-            
             isKeyboardOpen.value = (baseHeight - currentHeight) > 150;
-            
             window.scrollTo(0, 0); 
           };
           
@@ -486,11 +527,6 @@
           if (!keyboardInputSetting.value) streak.value = 0;
         });
 
-        const toggleKana = (c) => { 
-          selectedKana.has(c) ? selectedKana.delete(c) : selectedKana.add(c); 
-          updateWords(); 
-        };
-
         const toggleGroup = (label) => {
           const grid = alphabet.value === 'hiragana' ? hChars : kChars;
           const idx = grid.indexOf(label);
@@ -524,7 +560,8 @@
           keyboardInputSetting, showKanjiSetting, darkModeSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
           activeWord, activeKanji, activeDefinition, activeRomajiDisplay, isStarred, currentListName, feedbackChars, hasTypingErrors, 
           handleEnter, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, catSlash, animateCat, catFace, paddedStreakText,
-          isAllSelected, toggleSelectAll, activeRomajiTarget, toggleKana, toggleGroup, closeKanaMenu, isKeyboardOpen,
+          isAllSelected, toggleSelectAll, activeRomajiTarget, toggleGroup, closeKanaMenu, isKeyboardOpen,
+          startDrag, handleDrag, stopDrag,
           isKana: wanakana.isKana,
           toggleAlphabet: () => { alphabet.value = alphabet.value === 'hiragana' ? 'katakana' : 'hiragana'; }
         };
