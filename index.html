@@ -73,7 +73,10 @@
     .banner-title { font-size: 1.6em; letter-spacing: .2em; padding: 0.4em; }
     .banner-subtitle { font-size: 1.1em; color: var(--text-color-light); white-space: pre; }
 
-    .active-word-container { display: flex; flex-direction: column; align-items: center; padding: 25px; row-gap: 25px; cursor: pointer; }
+    /* Default row-gap is 25px, shrinks to 10px when keyboard is open via .is-keyboard-open class */
+    .active-word-container { display: flex; flex-direction: column; align-items: center; padding: 25px; row-gap: 25px; cursor: pointer; transition: row-gap 0.3s ease; }
+    .active-word-container.is-keyboard-open { row-gap: 10px; }
+    
     #active-word { font-size: 4vh; text-align: center; }
     .inline-kanji { font-size: 0.75em; color: var(--text-color-light); font-weight: 300; margin-left: 0.2em; }
     
@@ -182,7 +185,7 @@
         <div class="banner-subtitle">{{ subtitle }}</div>
       </div>
 
-      <div class="active-word-container" @click="handleScreenTap">
+      <div class="active-word-container" :class="{ 'is-keyboard-open': isKeyboardOpen }" @click="handleScreenTap">
         <div v-if="loading">loading dictionary...</div>
         <div v-else-if="wordList.length > 0" id="active-word">
           {{ activeWord }}<span class="inline-kanji" v-if="showKanjiSetting && showDetails && activeKanji">[{{ activeKanji }}]</span>
@@ -218,7 +221,7 @@
     </div>
 
     <div class="menu-container">
-      <div class="star-button-centered" v-if="wordList.length > 0 && !(showDetails && isKeyboardOpen)" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
+      <div class="star-button-centered" v-if="wordList.length > 0 && !isKeyboardOpen" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
         {{ isStarred ? '★' : '☆' }}
       </div>
       <div class="menu-item" @click="settingsOpen = true">settings</div>
