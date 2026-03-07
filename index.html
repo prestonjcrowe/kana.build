@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
   <title>kana.build</title>
   
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
@@ -23,6 +23,9 @@
       /* Toggle switch specific variables */
       --toggle-bg-off: #c3c3c3;
       --toggle-bg-on: #676767;
+
+      /* Dynamic viewport height to account for mobile keyboards */
+      --vh: 100vh;
       
       user-select: none;
     }
@@ -46,11 +49,25 @@
       box-sizing: border-box; 
       padding: 0; 
       margin: 0; 
-      -webkit-tap-highlight-color: transparent; 
+      -webkit-tap-highlight-color: transparent; /* This removes the blue tap highlight on mobile */
     }
     
-    body, html { height: 100%; width: 100%; background-color: var(--background-color); color: var(--text-color); font-family: sans-serif; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease; }
-    #app { height: 100%; width: 100%; }
+    body, html { 
+      height: var(--vh); 
+      width: 100%; 
+      background-color: var(--background-color); 
+      color: var(--text-color); 
+      font-family: sans-serif; 
+      overflow: hidden; 
+      transition: background-color 0.3s ease, color 0.3s ease; 
+    }
+    
+    #app { 
+      height: 100%; 
+      width: 100%; 
+      position: relative; /* Acts as the absolute anchor for the dynamic viewport */
+    }
+    
     .app-container { display: grid; grid-template-rows: 1fr 1fr 1fr; height: 100%; width: 100%; }
     .banner-container { display: flex; flex-direction: column; align-items: center; padding-top: 5em; }
     .banner-title { font-size: 1.6em; letter-spacing: .2em; padding: 0.4em; }
@@ -68,19 +85,23 @@
 
     .cursor { display: inline-block; width: 2px; height: 3vh; background-color: var(--text-color); margin-left: 2px; animation: blink 1s step-end infinite; }
     @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--text-color); } }
-    .hidden-input { position: absolute; opacity: 0; pointer-events: none; z-index: -1; }
+    
+    /* Centered so browser doesn't try to scroll the page when focused */
+    .hidden-input { position: absolute; top: 50%; left: 50%; opacity: 0; pointer-events: none; z-index: -1; }
 
     .menu-container { display: flex; flex-direction: column; align-items: center; padding: 50px; row-gap: 15px; }
     .menu-item { font-size: 1.3em; cursor: pointer; letter-spacing: .05em; color: var(--text-color); }
     .star-button-centered { color: var(--text-color-light); font-size: 2em; cursor: pointer; }
     .star-button-centered.is-starred { color: var(--text-color-darker); }
     
-    .streak-cat-container { position: fixed; bottom: 10px; left: 10px; color: var(--text-color-light); pointer-events: none; }
+    .streak-cat-container { position: absolute; bottom: 10px; left: 10px; color: var(--text-color-light); pointer-events: none; }
     pre.ascii-cat { font-family: monospace; font-size: 11px; line-height: 1.2; margin: 0; }
-    .word-counter { position: fixed; bottom: 30px; left: 30px; color: var(--text-color-light); font-size: 1.1em; }
-    .list-floating-button { position: fixed; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; }
+    
+    /* Changed from fixed to absolute to respect keyboard boundaries */
+    .word-counter { position: absolute; bottom: 30px; left: 30px; color: var(--text-color-light); font-size: 1.1em; }
+    .list-floating-button { position: absolute; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; }
 
-    .overlay-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: fixed; background-color: var(--background-color); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); transform: translateY(100%); z-index: 10; display: flex; align-items: center; justify-content: center; }
+    .overlay-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); transform: translateY(100%); z-index: 10; display: flex; align-items: center; justify-content: center; }
     .overlay-menu-container.is-open { transform: translateY(0); }
     .overlay-menu-content { display: flex; flex-direction: column; align-items: center; row-gap: 30px; width: 100%; }
 
@@ -90,7 +111,7 @@
     .toggle-knob { width: 16px; height: 16px; background-color: var(--background-color); border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
     .toggle-switch.is-active .toggle-knob { transform: translateX(22px); }
 
-    .kana-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: fixed; background-color: var(--background-color); transition: 0.4s; transform: translateY(100%); z-index: 15; }
+    .kana-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: 0.4s; transform: translateY(100%); z-index: 15; }
     .kana-menu-container.is-open { transform: translateY(0); }
     .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 2vh 4vh; max-width: 40vh; margin: auto; }
     .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 2.5vh; }
@@ -231,7 +252,6 @@
         const activeKanji = computed(() => activeWordData.value?.kanji || "");
         const activeDefinition = computed(() => activeWordData.value?.definition || "");
 
-        // --- DASH FIX / FLATTEN ROMAJI LOGIC ---
         const flattenRomaji = (text) => {
           const tokens = wanakana.tokenize(text);
           return tokens.map((token, idx) => {
@@ -275,7 +295,6 @@
           return base.padEnd(13, ' ');
         });
 
-        // --- SCOPING FIX FOR SELECT ALL ---
         const isAllSelected = computed(() => {
           const currentValid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
           return currentValid.length > 0 && currentValid.every(c => selectedKana.has(c));
@@ -368,6 +387,19 @@
         };
 
         onMounted(async () => {
+          // Dynamic viewport height scaling for mobile keyboards
+          const setVh = () => {
+            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            window.scrollTo(0, 0); // Prevent browser scroll jumps
+          };
+          setVh();
+          if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', setVh);
+          } else {
+            window.addEventListener('resize', setVh);
+          }
+
           const cachedK = JSON.parse(localStorage.getItem('selectedKana')) || [];
           cachedK.forEach(k => selectedKana.add(k));
           const cachedS = JSON.parse(localStorage.getItem('starredWords')) || [];
