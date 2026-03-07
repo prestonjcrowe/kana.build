@@ -1,0 +1,51 @@
+expression,reading,meaning,tags
+動物,どうぶつ,animal,JLPT JLPT_5 JLPT_N5
+犬,いぬ,dog,JLPT JLPT_5 JLPT_N5
+猫,ねこ,cat,JLPT JLPT_5 JLPT_N5
+子犬,こいぬ,puppy,Animal_Common
+子猫,こねこ,kitten,Animal_Common
+鳥,とり,bird,JLPT JLPT_5 JLPT_N5
+魚,さかな,fish,JLPT JLPT_5 JLPT_N5
+牛,うし,cow; cattle,JLPT JLPT_5 JLPT_N5
+馬,うま,horse,JLPT JLPT_4 JLPT_N4
+豚,ぶた,pig,JLPT JLPT_4 JLPT_N4
+羊,ひつじ,sheep,JLPT JLPT_4 JLPT_N4
+山羊,やぎ,goat,Animal_Common
+象,ぞう,elephant,JLPT JLPT_4 JLPT_N4
+猿,さる,monkey,JLPT JLPT_4 JLPT_N4
+蛇,へび,snake,JLPT JLPT_4 JLPT_N4
+兎,うさぎ,rabbit,JLPT JLPT_4 JLPT_N4
+熊,くま,bear,Animal_Common
+虎,とら,tiger,Animal_Common
+獅子,しし,lion,Animal_Common
+ライオン,らいおん,lion,Animal_Common
+鼠,ねずみ,mouse; rat,JLPT JLPT_4 JLPT_N4
+麒麟,きりん,giraffe,Animal_Common
+狐,きつね,fox,Animal_Common
+狸,たぬき,raccoon dog,Animal_Common
+鹿,しか,deer,Animal_Common
+パンダ,ぱんだ,panda,Animal_Common
+狼,おおかみ,wolf,Animal_Common
+亀,かめ,turtle; tortoise,Animal_Common
+蛙,かえる,frog,Animal_Common
+虫,むし,insect; bug,JLPT JLPT_4 JLPT_N4
+蝶,ちょう,butterfly,Animal_Common
+蜂,はち,bee,Animal_Common
+蜘蛛,くも,spider,Animal_Common
+蚊,か,mosquito,Animal_Common
+蟻,あり,ant,Animal_Common
+金魚,きんぎょ,goldfish,Animal_Common
+鮫,さめ,shark,Animal_Common
+鯨,くじら,whale,Animal_Common
+海老,えび,shrimp; prawn,Animal_Common
+蟹,かに,crab,Animal_Common
+蛸,たこ,octopus,Animal_Common
+烏賊,いか,squid,Animal_Common
+鶏,にわとり,chicken,Animal_Common
+鴨,かも,wild duck,Animal_Common
+鳩,はと,pigeon; dove,Animal_Common
+雀,すずめ,sparrow,Animal_Common
+烏,からす,crow,Animal_Common
+蝙蝠,こうもり,bat,Animal_Common
+ペンギン,ぺんぎん,penguin,Animal_Common
+河馬,かば,hippopotamus,Animal_Common

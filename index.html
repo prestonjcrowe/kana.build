@@ -1,1 +1,449 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="A flash card style study tool for practicing Japanese"/><link rel="apple-touch-icon" href="/logo192.png"/><link rel="manifest" href="/manifest.json"/><title>kana.build</title><script defer="defer" src="/static/js/main.179bc178.js"></script><link href="/static/css/main.b4c98af1.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>kana.build</title>
+  
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/wanakana"></script>
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    :root {
+      --text-color: #626262;
+      --text-color-light: #b5afa7;
+      --text-color-dark: #c3c3c3;
+      --text-color-darker: #414649;
+      --selected-kana-bg: #676767;
+      --background-color: white;
+      --error-color: #ff6b6b;
+      --success-color: #51cf66;
+      user-select: none;
+    }
+
+    body.dark-theme {
+      --text-color: #dfdfdf;
+      --text-color-light: #b5b5b5;
+      --text-color-dark: #d5d5d5;
+      --text-color-darker: #ffffff;
+      --selected-kana-bg: #4c4c4c;
+      --background-color: #1a1a1a;
+      --error-color: #ff5252;
+      --success-color: #69db7c;
+    }
+
+    * { box-sizing: border-box; padding: 0; margin: 0; }
+    body, html { height: 100%; width: 100%; background-color: var(--background-color); color: var(--text-color); font-family: sans-serif; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease; }
+    #app { height: 100%; width: 100%; }
+    .app-container { display: grid; grid-template-rows: 1fr 1fr 1fr; height: 100%; width: 100%; }
+    .banner-container { display: flex; flex-direction: column; align-items: center; padding-top: 5em; }
+    .banner-title { font-size: 1.6em; letter-spacing: .2em; padding: 0.4em; }
+    .banner-subtitle { font-size: 1.1em; color: var(--text-color-light); white-space: pre; }
+
+    .active-word-container { display: flex; flex-direction: column; align-items: center; padding: 25px; row-gap: 25px; cursor: pointer; }
+    #active-word { font-size: 4vh; text-align: center; }
+    .inline-kanji { font-size: 0.75em; color: var(--text-color-light); font-weight: 300; margin-left: 0.2em; }
+    
+    #active-word-romaji { font-size: 3.5vh; min-height: 3.5vh; display: flex; align-items: center; justify-content: center; }
+    .char-match { color: var(--success-color); }
+    .char-error { color: var(--error-color); }
+    .correction-hint { color: var(--text-color-light); font-size: 0.8em; margin-left: 12px; font-weight: 300; }
+    #active-word-definition { font-size: 2.75vh; letter-spacing: .05em; text-align: center; }
+
+    .cursor { display: inline-block; width: 2px; height: 3vh; background-color: var(--text-color); margin-left: 2px; animation: blink 1s step-end infinite; }
+    @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--text-color); } }
+    .hidden-input { position: absolute; opacity: 0; pointer-events: none; z-index: -1; }
+
+    .menu-container { display: flex; flex-direction: column; align-items: center; padding: 50px; row-gap: 15px; }
+    .menu-item { font-size: 1.3em; cursor: pointer; letter-spacing: .05em; color: var(--text-color); }
+    .star-button-centered { color: var(--text-color-light); font-size: 2em; cursor: pointer; }
+    .star-button-centered.is-starred { color: var(--text-color-darker); }
+    
+    .streak-cat-container { fixed; bottom: 10px; left: 10px; color: var(--text-color-light); pointer-events: none; position: fixed; }
+    pre.ascii-cat { font-family: monospace; font-size: 11px; line-height: 1.2; margin: 0; }
+    .word-counter { position: fixed; bottom: 30px; left: 30px; color: var(--text-color-light); font-size: 1.1em; }
+    .list-floating-button { position: fixed; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; }
+
+    .overlay-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: fixed; background-color: var(--background-color); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); transform: translateY(100%); z-index: 10; display: flex; align-items: center; justify-content: center; }
+    .overlay-menu-container.is-open { transform: translateY(0); }
+    .overlay-menu-content { display: flex; flex-direction: column; align-items: center; row-gap: 30px; width: 100%; }
+
+    .settings-toggle-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 240px; cursor: pointer; }
+    .toggle-switch { width: 44px; height: 22px; border-radius: 11px; background-color: var(--text-color-dark); position: relative; transition: 0.3s; }
+    .toggle-switch.is-active { background-color: var(--selected-kana-bg); }
+    .toggle-knob { width: 16px; height: 16px; background-color: var(--background-color); border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+    .toggle-switch.is-active .toggle-knob { transform: translateX(22px); }
+
+    .kana-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: fixed; background-color: var(--background-color); transition: 0.4s; transform: translateY(100%); z-index: 15; }
+    .kana-menu-container.is-open { transform: translateY(0); }
+    .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 2vh 4vh; max-width: 40vh; margin: auto; }
+    .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 2.5vh; }
+    .kana-menu-alphabet-button { font-size: 1.6vh; cursor: pointer; border-radius: 0.6em; padding: 0.4em 1.4em; border: 1px solid var(--text-color-dark); color: var(--text-color-dark); }
+    .hamburger-container { position: relative; }
+    .kana-menu-list-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 2.5vh; text-align: right; }
+    .hamburger-dropdown { position: absolute; top: 100%; right: 0; margin-top: 1vh; background-color: var(--background-color); border: 1px solid var(--text-color-dark); border-radius: 0.6em; padding: 1.5vh 2vh; box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 20; white-space: nowrap; }
+    .hamburger-option { color: var(--text-color-dark); font-size: 1.6vh; cursor: pointer; padding: 0.5vh 0; }
+    .hamburger-option:hover { color: var(--text-color-darker); font-weight: bold; }
+    .kana-character-menu-container { padding-top: 2vh; display: grid; grid-template-columns: repeat(6, 1fr); margin: auto; gap: 0.6vh; width: fit-content; touch-action: none; }
+    .kana-menu-romaji-label { font-size: 1.4vh; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color-dark); height: 4vh; }
+    .kana-menu-character { width: 4vh; height: 4vh; font-size: 2.2vh; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color-dark); border-radius: 50%; }
+    .kana-menu-character.selected-kana { background-color: var(--selected-kana-bg); color: var(--background-color) !important; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <input type="text" ref="keyboardTrigger" class="hidden-input" v-model="userInput" @keydown.enter="handleEnter" autocapitalize="none" />
+
+    <div class="app-container">
+      <div class="banner-container">
+        <div class="banner-title">kana.build</div>
+        <div class="banner-subtitle">{{ subtitle }}</div>
+      </div>
+
+      <div class="active-word-container" @click="handleScreenTap">
+        <div v-if="loading">loading dictionary...</div>
+        <div v-else-if="wordList.length > 0" id="active-word">
+          {{ activeWord }}<span class="inline-kanji" v-if="showKanjiSetting && showDetails && activeKanji">[{{ activeKanji }}]</span>
+        </div>
+        <div v-else @click.stop="kanaOpen = true">edit kana to begin</div>
+
+        <div id="active-word-romaji">
+          <template v-if="keyboardInputSetting && !showDetails">
+            {{ userInput }}<span class="cursor"></span>
+          </template>
+          
+          <template v-else-if="showDetails">
+             <template v-if="keyboardInputSetting">
+               <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
+               <span class="correction-hint" v-if="hasTypingErrors && activeRomajiTarget">({{ activeRomajiTarget }})</span>
+             </template>
+             <template v-else>
+               <span>{{ activeRomajiDisplay }}</span>
+             </template>
+          </template>
+        </div>
+
+        <div id="active-word-definition">{{ showDetails ? activeDefinition : "" }}</div>
+      </div>
+
+      <div class="menu-container">
+        <div class="star-button-centered" v-if="wordList.length > 0" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
+          {{ isStarred ? '★' : '☆' }}
+        </div>
+        <div class="menu-item" @click="settingsOpen = true">settings</div>
+      </div>
+
+      <div v-if="keyboardInputSetting" class="streak-cat-container">
+<pre class="ascii-cat">
+        ∧____∧   ／￣￣￣￣￣￣￣￣＼
+      （ ・{{ catFace }}・） <    {{ paddedStreakText }}|
+    ＿ ({{ catSlash }})＿＿⊂)_＼⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽／
+  ／旦／三 ／   ／|
+ |‾‾‾‾‾‾‾‾‾‾‾‾‾| |
+ |             |／
+</pre>
+      </div>
+      <div v-else class="word-counter" v-if="wordFilter !== 'all' && wordList.length > 0">
+        {{ activeWordIndex + 1 }} / {{ wordList.length }}
+      </div>
+
+      <div class="list-floating-button" @click="listOpen = true">{{ currentListName }}</div>
+    </div>
+
+    <div class="overlay-menu-container" :class="{ 'is-open': listOpen }">
+      <div class="overlay-menu-content">
+        <div class="menu-item" v-for="(name, id) in availableLists" :key="id" @click="selectList(id)">{{ name }}</div>
+        <div class="menu-item" style="color: var(--text-color-light);" @click="listOpen = false">cancel</div>
+      </div>
+    </div>
+
+    <div class="overlay-menu-container" :class="{ 'is-open': settingsOpen }">
+      <div class="overlay-menu-content">
+        <div class="menu-item" @click="kanaOpen = true; settingsOpen = false">edit kana</div>
+        <div class="settings-toggle-row" @click="keyboardInputSetting = !keyboardInputSetting">
+          <span>keyboard input</span>
+          <div class="toggle-switch" :class="{ 'is-active': keyboardInputSetting }"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="settings-toggle-row" @click="showKanjiSetting = !showKanjiSetting">
+          <span>show kanji</span>
+          <div class="toggle-switch" :class="{ 'is-active': showKanjiSetting }"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="settings-toggle-row" @click="darkModeSetting = !darkModeSetting">
+          <span>dark mode</span>
+          <div class="toggle-switch" :class="{ 'is-active': darkModeSetting }"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="menu-item" style="color: var(--text-color-light);" @click="settingsOpen = false">cancel</div>
+      </div>
+    </div>
+
+    <div class="kana-menu-container" :class="{ 'is-open': kanaOpen }">
+      <div class="kana-menu-controls-container">
+        <div class="kana-menu-exit-button" @click="closeKanaMenu">←</div>
+        <div class="kana-menu-alphabet-button" @click="toggleAlphabet">{{ alphabet }}</div>
+        <div class="hamburger-container">
+          <div class="kana-menu-list-button" @click="kanaHamburgerOpen = !kanaHamburgerOpen">☰</div>
+          <div v-if="kanaHamburgerOpen" class="hamburger-dropdown">
+            <div class="hamburger-option" @click="toggleSelectAll">{{ isAllSelected ? 'deselect all' : 'select all' }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="kana-character-menu-container">
+        <div v-for="char in (alphabet === 'hiragana' ? hChars : kChars)">
+          <div v-if="char === ' '"></div>
+          <div v-else-if="!isKana(char)" class="kana-menu-romaji-label" @click="toggleGroup(char)">{{ char }}</div>
+          <div v-else class="kana-menu-character" :class="{ 'selected-kana': selectedKana.has(char) }" @click="toggleKana(char)">{{ char }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+    const KAOMOJI = ["(o^▽^o)", "ヽ(・∀・)ﾉ", "(´｡• ω •｡`)", "(￣ω￣)", "(*¯︶¯*)"];
+    const correctSound = new Audio('Correct.mp3');
+    const incorrectSound = new Audio('Incorrect.mp3');
+
+    createApp({
+      setup() {
+        const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
+        const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), kanaOpen = ref(false), kanaHamburgerOpen = ref(false);
+        const keyboardInputSetting = ref(false), showKanjiSetting = ref(false), darkModeSetting = ref(false);
+        const streak = ref(0), catSlash = ref("/"), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
+        const alphabet = ref("hiragana"), currentCSV = ref([]);
+        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
+
+        const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
+        const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: '★' };
+
+        const activeWordData = computed(() => wordList.value[activeWordIndex.value]);
+        const activeWord = computed(() => activeWordData.value?.text || "...");
+        const activeKanji = computed(() => activeWordData.value?.kanji || "");
+        const activeDefinition = computed(() => activeWordData.value?.definition || "");
+
+        // --- DASH FIX / FLATTEN ROMAJI LOGIC ---
+        const flattenRomaji = (text) => {
+          const tokens = wanakana.tokenize(text);
+          return tokens.map((token, idx) => {
+             if (token === 'ー' || token === '-') {
+               if (idx === 0) return '';
+               const prevRomaji = wanakana.toRomaji(tokens[idx-1]);
+               return prevRomaji.slice(-1);
+             }
+             return wanakana.toRomaji(token);
+          }).join('').replace(/\s/g, '').toLowerCase();
+        };
+
+        const activeRomajiTarget = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "");
+        const activeFlattenedTarget = computed(() => activeWordData.value ? flattenRomaji(activeWordData.value.text) : "");
+        const activeRomajiDisplay = computed(() => activeWordData.value ? wanakana.tokenize(activeWordData.value.text).map(t => wanakana.toRomaji(t)).join('') : "");
+
+        const feedbackChars = computed(() => {
+          if (!keyboardInputSetting.value) return [];
+          const input = userInput.value.toLowerCase();
+          const target = activeFlattenedTarget.value;
+          
+          if (flattenRomaji(userInput.value) === target) {
+             return input.split('').map(char => ({ val: char, match: true }));
+          }
+
+          return input.split('').map((char, i) => ({ 
+             val: char, 
+             match: char === activeRomajiTarget.value[i] || flattenRomaji(char) === flattenRomaji(activeRomajiTarget.value[i] || "")
+          }));
+        });
+
+        const hasTypingErrors = computed(() => flattenRomaji(userInput.value) !== activeFlattenedTarget.value);
+
+        const isStarred = computed(() => starredWords.has(activeWord.value));
+        const currentListName = computed(() => availableLists[wordFilter.value]);
+
+        const catFace = computed(() => streak.value === 0 ? "A " : "∀");
+
+        const paddedStreakText = computed(() => {
+          const base = `streak: ${streak.value}`;
+          return base.padEnd(13, ' ');
+        });
+
+        // --- SCOPING FIX FOR SELECT ALL ---
+        const isAllSelected = computed(() => {
+          const currentValid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
+          return currentValid.length > 0 && currentValid.every(c => selectedKana.has(c));
+        });
+
+        const toggleSelectAll = () => {
+          const currentValid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
+          const target = isAllSelected.value ? 'delete' : 'add';
+          currentValid.forEach(c => target === 'delete' ? selectedKana.delete(c) : selectedKana.add(c));
+          updateWords();
+          kanaHamburgerOpen.value = false;
+        };
+
+        const animateCat = async () => {
+          for (let i = 0; i < 5; i++) {
+            catSlash.value = catSlash.value === "/" ? "\\" : "/";
+            await new Promise(r => setTimeout(r, 100));
+          }
+          catSlash.value = "/";
+        };
+
+        const handleEnter = () => {
+          if (!keyboardInputSetting.value) return;
+          if (showDetails.value) {
+            nextWord();
+          } else {
+            if (!hasTypingErrors.value) {
+              streak.value++;
+              animateCat();
+              correctSound.currentTime = 0;
+              correctSound.play().catch(e => console.warn("Audio blocked by browser"));
+            } else {
+              streak.value = 0;
+              incorrectSound.currentTime = 0;
+              incorrectSound.play().catch(e => console.warn("Audio blocked by browser"));
+            }
+            showDetails.value = true;
+          }
+        };
+
+        const handleScreenTap = () => {
+          if (showDetails.value) nextWord();
+          else if (keyboardInputSetting.value) nextTick(() => keyboardTrigger.value?.focus());
+          else showDetails.value = true;
+        };
+
+        const nextWord = () => {
+          if (wordList.value.length === 0) return;
+          activeWordIndex.value = (activeWordIndex.value + 1) % wordList.value.length;
+          showDetails.value = false;
+          userInput.value = "";
+          subtitle.value = KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)];
+          if (keyboardInputSetting.value) nextTick(() => keyboardTrigger.value?.focus());
+        };
+
+        const toggleStar = () => {
+          if (isStarred.value) starredWords.delete(activeWord.value);
+          else starredWords.add(activeWord.value);
+          localStorage.setItem('starredWords', JSON.stringify([...starredWords]));
+        };
+
+        const selectList = async (id) => {
+          wordFilter.value = id;
+          if (id !== 'all' && id !== 'starred') {
+            const res = await fetch(`${id}.csv`);
+            const text = await res.text();
+            currentCSV.value = Papa.parse(text, { skipEmptyLines: true }).data.map(r => r[0].trim());
+          }
+          updateWords();
+          listOpen.value = false;
+        };
+
+        const updateWords = () => {
+          wordList.value = dictionary.value.filter(w => {
+            const kana = w.kana[0].text;
+            for (let c of kana) { 
+              if (c === "ー") continue;
+              const norm = c.replace(/[ゃゅょぁぃぅぇぉャュョァィゥェォ]/, (m) => ({
+                'ゃ':'や','ゅ':'ゆ','ょ':'よ','ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お',
+                'ャ':'ヤ','ュ':'ユ','ョ':'ヨ','ァ':'ア','ィ':'イ','ゥ':'ウ','ェ':'エ','ォ':'オ'
+              }[m] || m));
+              if (!selectedKana.has(norm)) return false;
+            }
+            if (wordFilter.value === 'starred') return starredWords.has(kana);
+            if (wordFilter.value !== 'all') return currentCSV.value.includes(kana) || currentCSV.value.includes(w.kanji?.[0]?.text);
+            return true;
+          }).map(w => ({ text: w.kana[0].text, kanji: w.kanji?.[0]?.text || "", definition: w.sense[0].gloss[0].text }))
+          .sort(() => Math.random() - 0.5);
+          activeWordIndex.value = 0; showDetails.value = false;
+        };
+
+        onMounted(async () => {
+          const cachedK = JSON.parse(localStorage.getItem('selectedKana')) || [];
+          cachedK.forEach(k => selectedKana.add(k));
+          const cachedS = JSON.parse(localStorage.getItem('starredWords')) || [];
+          cachedS.forEach(s => starredWords.add(s));
+          showKanjiSetting.value = localStorage.getItem('showKanjiSetting') === 'true';
+          keyboardInputSetting.value = localStorage.getItem('keyboardInputSetting') === 'true';
+          
+          darkModeSetting.value = localStorage.getItem('darkModeSetting') === 'true';
+          if (darkModeSetting.value) document.body.classList.add('dark-theme');
+
+          window.addEventListener('keydown', (e) => {
+            if (settingsOpen.value || listOpen.value || kanaOpen.value) return;
+            if (keyboardInputSetting.value && !showDetails.value) { 
+              keyboardTrigger.value?.focus(); 
+            } else if (e.code === 'Space') {
+              handleScreenTap();
+            }
+          });
+
+          try {
+            const res = await fetch('jmdict-eng-common.json');
+            const data = await res.json();
+            dictionary.value = data.words;
+            updateWords();
+            loading.value = false;
+          } catch (e) { console.error("Load failed"); }
+        });
+
+        watch(darkModeSetting, (v) => { 
+          localStorage.setItem('darkModeSetting', v);
+          v ? document.body.classList.add('dark-theme') : document.body.classList.remove('dark-theme');
+        });
+
+        watch([selectedKana, keyboardInputSetting, showKanjiSetting], () => {
+          localStorage.setItem('selectedKana', JSON.stringify([...selectedKana]));
+          localStorage.setItem('keyboardInputSetting', keyboardInputSetting.value);
+          localStorage.setItem('showKanjiSetting', showKanjiSetting.value);
+          if (!keyboardInputSetting.value) streak.value = 0;
+        });
+
+        const toggleKana = (c) => { 
+          selectedKana.has(c) ? selectedKana.delete(c) : selectedKana.add(c); 
+          updateWords(); 
+        };
+
+        const toggleGroup = (label) => {
+          const grid = alphabet.value === 'hiragana' ? hChars : kChars;
+          const idx = grid.indexOf(label);
+          // REMOVED THE DASH HERE to properly map it as a row
+          const isVowelCol = "aiueo".includes(label); 
+          const toToggle = [];
+          
+          for (let i = 0; i < grid.length; i++) {
+            const charAt = grid[i];
+            if (!wanakana.isKana(charAt)) continue;
+            
+            if (isVowelCol && (i % 6 === idx)) {
+              toToggle.push(charAt);
+            }
+            if (!isVowelCol && (Math.floor(i / 6) === Math.floor(idx / 6))) {
+              toToggle.push(charAt);
+            }
+          }
+          
+          const allIn = toToggle.every(c => selectedKana.has(c));
+          toToggle.forEach(c => allIn ? selectedKana.delete(c) : selectedKana.add(c));
+          updateWords();
+        };
+
+        const closeKanaMenu = () => { 
+          kanaOpen.value = false; 
+          if (keyboardInputSetting.value) nextTick(() => keyboardTrigger.value?.focus()); 
+        };
+
+        return { 
+          dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, kanaOpen, kanaHamburgerOpen,
+          keyboardInputSetting, showKanjiSetting, darkModeSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
+          activeWord, activeKanji, activeDefinition, activeRomajiDisplay, isStarred, currentListName, feedbackChars, hasTypingErrors, 
+          handleEnter, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, catSlash, animateCat, catFace, paddedStreakText,
+          isAllSelected, toggleSelectAll, activeRomajiTarget, toggleKana, toggleGroup, closeKanaMenu,
+          isKana: wanakana.isKana,
+          toggleAlphabet: () => { alphabet.value = alphabet.value === 'hiragana' ? 'katakana' : 'hiragana'; }
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
