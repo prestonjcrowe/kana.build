@@ -19,6 +19,11 @@
       --background-color: white;
       --error-color: #ff6b6b;
       --success-color: #51cf66;
+      
+      /* Toggle switch specific variables */
+      --toggle-bg-off: #c3c3c3;
+      --toggle-bg-on: #676767;
+      
       user-select: none;
     }
 
@@ -31,13 +36,17 @@
       --background-color: #1a1a1a;
       --error-color: #ff5252;
       --success-color: #69db7c;
+      
+      /* Inverted toggle colors for dark mode */
+      --toggle-bg-off: #4c4c4c;
+      --toggle-bg-on: #d5d5d5;
     }
 
     * { 
       box-sizing: border-box; 
       padding: 0; 
       margin: 0; 
-      -webkit-tap-highlight-color: transparent; /* This removes the blue tap highlight on mobile */
+      -webkit-tap-highlight-color: transparent; 
     }
     
     body, html { height: 100%; width: 100%; background-color: var(--background-color); color: var(--text-color); font-family: sans-serif; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease; }
@@ -76,8 +85,8 @@
     .overlay-menu-content { display: flex; flex-direction: column; align-items: center; row-gap: 30px; width: 100%; }
 
     .settings-toggle-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 240px; cursor: pointer; }
-    .toggle-switch { width: 44px; height: 22px; border-radius: 11px; background-color: var(--text-color-dark); position: relative; transition: 0.3s; }
-    .toggle-switch.is-active { background-color: var(--selected-kana-bg); }
+    .toggle-switch { width: 44px; height: 22px; border-radius: 11px; background-color: var(--toggle-bg-off); position: relative; transition: 0.3s; }
+    .toggle-switch.is-active { background-color: var(--toggle-bg-on); }
     .toggle-knob { width: 16px; height: 16px; background-color: var(--background-color); border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
     .toggle-switch.is-active .toggle-knob { transform: translateX(22px); }
 
@@ -140,16 +149,10 @@
         <div class="menu-item" @click="settingsOpen = true">settings</div>
       </div>
 
-      <div v-if="keyboardInputSetting" class="streak-cat-container">
-<pre class="ascii-cat">
-        ∧____∧   ／￣￣￣￣￣￣￣￣＼
-      （ ・{{ catFace }}・） <    {{ paddedStreakText }}|
-    ＿ ({{ catSlash }})＿＿⊂)_＼⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽／
-  ／旦／三 ／   ／|
- |‾‾‾‾‾‾‾‾‾‾‾‾‾| |
- |             |／
-</pre>
+      <div v-if="keyboardInputSetting" class="word-counter">
+        streak: {{ streak }}
       </div>
+      
       <div v-else class="word-counter" v-if="wordFilter !== 'all' && wordList.length > 0">
         {{ activeWordIndex + 1 }} / {{ wordList.length }}
       </div>
@@ -228,6 +231,7 @@
         const activeKanji = computed(() => activeWordData.value?.kanji || "");
         const activeDefinition = computed(() => activeWordData.value?.definition || "");
 
+        // --- DASH FIX / FLATTEN ROMAJI LOGIC ---
         const flattenRomaji = (text) => {
           const tokens = wanakana.tokenize(text);
           return tokens.map((token, idx) => {
@@ -271,6 +275,7 @@
           return base.padEnd(13, ' ');
         });
 
+        // --- SCOPING FIX FOR SELECT ALL ---
         const isAllSelected = computed(() => {
           const currentValid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
           return currentValid.length > 0 && currentValid.every(c => selectedKana.has(c));
