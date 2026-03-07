@@ -7,6 +7,7 @@
   
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1a1a1a">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/wanakana"></script>
@@ -238,7 +239,7 @@
         const lastToggledChar = ref(null);
 
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: '★' };
 
         const activeWordData = computed(() => wordList.value[activeWordIndex.value]);
@@ -311,7 +312,6 @@
         const updateWords = () => {
           wordList.value = dictionary.value.filter(w => {
             const kana = w.kana[0].text;
-            // CORRECTED: Only filter by Kanji existence IF kanjiOnlySetting is true
             if (kanjiOnlySetting.value && !w.kanji?.[0]?.text) return false;
             for (let c of kana) { 
               if (c === "ー") continue;
@@ -347,13 +347,31 @@
           showKanjiSetting.value = localStorage.getItem('showKanjiSetting') === 'true';
           kanjiOnlySetting.value = localStorage.getItem('kanjiOnlySetting') === 'true';
           keyboardInputSetting.value = localStorage.getItem('keyboardInputSetting') === 'true';
+          
           darkModeSetting.value = localStorage.getItem('darkModeSetting') === 'true';
           if (darkModeSetting.value) document.body.classList.add('dark-theme');
+          
+          // Initial Meta Tag Setting
+          const initialColor = darkModeSetting.value ? "#1a1a1a" : "#ffffff";
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', initialColor);
+          const initialBar = darkModeSetting.value ? "black-translucent" : "default";
+          document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').setAttribute('content', initialBar);
+
           window.addEventListener('keydown', (e) => { if (settingsOpen.value || listOpen.value || kanaOpen.value) return; if (keyboardInputSetting.value && !showDetails.value) keyboardTrigger.value?.focus(); else if (e.code === 'Space') handleScreenTap(); });
           try { const res = await fetch('jmdict-eng-common.json'); const data = await res.json(); dictionary.value = data.words; updateWords(); loading.value = false; } catch (e) {}
         });
 
-        watch(darkModeSetting, (v) => { localStorage.setItem('darkModeSetting', v); v ? document.body.classList.add('dark-theme') : document.body.classList.remove('dark-theme'); });
+        watch(darkModeSetting, (v) => { 
+          localStorage.setItem('darkModeSetting', v); 
+          v ? document.body.classList.add('dark-theme') : document.body.classList.remove('dark-theme'); 
+          
+          // Dynamic Meta Tag Updates
+          const themeColor = v ? "#1a1a1a" : "#ffffff";
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
+          const barStyle = v ? "black-translucent" : "default";
+          document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').setAttribute('content', barStyle);
+        });
+
         watch([selectedKana, keyboardInputSetting, showKanjiSetting, kanjiOnlySetting], () => { 
           localStorage.setItem('selectedKana', JSON.stringify([...selectedKana])); localStorage.setItem('keyboardInputSetting', keyboardInputSetting.value); 
           localStorage.setItem('showKanjiSetting', showKanjiSetting.value); localStorage.setItem('kanjiOnlySetting', kanjiOnlySetting.value);
