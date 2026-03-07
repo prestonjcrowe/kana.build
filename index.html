@@ -81,7 +81,24 @@
     .char-match { color: var(--success-color); }
     .char-error { color: var(--error-color); }
     .correction-hint { color: var(--text-color-light); font-size: 0.8em; margin-left: 12px; font-weight: 300; }
+    
+    #active-word-definition-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      column-gap: 10px;
+    }
     #active-word-definition { font-size: 2.75vh; letter-spacing: .05em; text-align: center; }
+    
+    .inline-star {
+      font-size: 3vh;
+      color: var(--text-color-light);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .inline-star.is-starred { color: var(--text-color-darker); }
 
     .cursor { display: inline-block; width: 2px; height: 3vh; background-color: var(--text-color); margin-left: 2px; animation: blink 1s step-end infinite; }
     @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--text-color); } }
@@ -188,14 +205,20 @@
           </template>
         </div>
 
-        <div id="active-word-definition">{{ showDetails ? activeDefinition : "" }}</div>
+        <div id="active-word-definition-container">
+          <div id="active-word-definition">{{ showDetails ? activeDefinition : "" }}</div>
+          
+          <div v-if="showDetails && isKeyboardOpen" class="inline-star" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
+            {{ isStarred ? '★' : '☆' }}
+          </div>
+        </div>
       </div>
       
       <div></div> 
     </div>
 
     <div class="menu-container">
-      <div class="star-button-centered" v-if="wordList.length > 0" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
+      <div class="star-button-centered" v-if="wordList.length > 0 && !(showDetails && isKeyboardOpen)" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
         {{ isStarred ? '★' : '☆' }}
       </div>
       <div class="menu-item" @click="settingsOpen = true">settings</div>
@@ -272,6 +295,7 @@
         const streak = ref(0), catSlash = ref("/"), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
         const alphabet = ref("hiragana"), currentCSV = ref([]);
         const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
+        const isKeyboardOpen = ref(false);
 
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
         const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
@@ -318,6 +342,13 @@
         const isStarred = computed(() => starredWords.has(activeWord.value));
         const currentListName = computed(() => availableLists[wordFilter.value]);
 
+        const catFace = computed(() => streak.value === 0 ? "A " : "∀");
+
+        const paddedStreakText = computed(() => {
+          const base = `streak: ${streak.value}`;
+          return base.padEnd(13, ' ');
+        });
+
         const isAllSelected = computed(() => {
           const currentValid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
           return currentValid.length > 0 && currentValid.every(c => selectedKana.has(c));
@@ -331,6 +362,14 @@
           kanaHamburgerOpen.value = false;
         };
 
+        const animateCat = async () => {
+          for (let i = 0; i < 5; i++) {
+            catSlash.value = catSlash.value === "/" ? "\\" : "/";
+            await new Promise(r => setTimeout(r, 100));
+          }
+          catSlash.value = "/";
+        };
+
         const handleEnter = () => {
           if (!keyboardInputSetting.value) return;
           if (showDetails.value) {
@@ -338,6 +377,7 @@
           } else {
             if (!hasTypingErrors.value) {
               streak.value++;
+              animateCat();
               correctSound.currentTime = 0;
               correctSound.play().catch(e => console.warn("Audio blocked by browser"));
             } else {
@@ -401,12 +441,20 @@
         };
 
         onMounted(async () => {
-          // Dynamic viewport height scaling for mobile keyboards
+          let maxVh = typeof window !== 'undefined' ? window.innerHeight : 1000;
+          
+          // Dynamic viewport height scaling & keyboard detection
           const setVh = () => {
             const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            if (vh > maxVh) maxVh = vh; // Remember the tallest state of the screen
             document.documentElement.style.setProperty('--vh', `${vh}px`);
+            
+            // If the screen shrinks to less than 80% of its max height, the keyboard is likely up
+            isKeyboardOpen.value = vh < (maxVh * 0.8);
+            
             window.scrollTo(0, 0); // Prevent browser scroll jumps
           };
+          
           setVh();
           if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', setVh);
@@ -491,8 +539,8 @@
           dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, kanaOpen, kanaHamburgerOpen,
           keyboardInputSetting, showKanjiSetting, darkModeSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
           activeWord, activeKanji, activeDefinition, activeRomajiDisplay, isStarred, currentListName, feedbackChars, hasTypingErrors, 
-          handleEnter, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, 
-          isAllSelected, toggleSelectAll, activeRomajiTarget, toggleKana, toggleGroup, closeKanaMenu,
+          handleEnter, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, catSlash, animateCat, catFace, paddedStreakText,
+          isAllSelected, toggleSelectAll, activeRomajiTarget, toggleKana, toggleGroup, closeKanaMenu, isKeyboardOpen,
           isKana: wanakana.isKana,
           toggleAlphabet: () => { alphabet.value = alphabet.value === 'hiragana' ? 'katakana' : 'hiragana'; }
         };
