@@ -1,0 +1,51 @@
+expression,reading,meaning,tags
+食べ物,たべもの,food,JLPT JLPT_5 JLPT_N5
+飲み物,のみもの,beverage; drink,JLPT JLPT_5 JLPT_N5
+朝食,ちょうしょく,breakfast,JLPT JLPT_4 JLPT_N4
+昼食,ちゅうしょく,lunch,JLPT JLPT_4 JLPT_N4
+夕食,ゆうしょく,dinner,JLPT JLPT_4 JLPT_N4
+ご飯,ごはん,meal; cooked rice,JLPT JLPT_5 JLPT_N5
+パン,ぱん,bread,JLPT JLPT_5 JLPT_N5
+卵,たまご,egg,JLPT JLPT_5 JLPT_N5
+肉,にく,meat,JLPT JLPT_5 JLPT_N5
+牛肉,ぎゅうにく,beef,JLPT JLPT_4 JLPT_N4
+豚肉,ぶたにく,pork,JLPT JLPT_4 JLPT_N4
+鶏肉,とりにく,chicken meat,JLPT JLPT_4 JLPT_N4
+魚,さかな,fish,JLPT JLPT_5 JLPT_N5
+野菜,やさい,vegetable,JLPT JLPT_5 JLPT_N5
+果物,くだもの,fruit,JLPT JLPT_5 JLPT_N5
+砂糖,さとう,sugar,JLPT JLPT_5 JLPT_N5
+塩,しお,salt,JLPT JLPT_5 JLPT_N5
+醤油,しょうゆ,soy sauce,JLPT JLPT_5 JLPT_N5
+味噌,みそ,miso; soybean paste,Food_Common
+油,あぶら,oil,JLPT JLPT_4 JLPT_N4
+米,こめ,uncooked rice,JLPT JLPT_4 JLPT_N4
+麺,めん,noodles,Food_Common
+ラーメン,らーめん,ramen,Food_Common
+うどん,うどん,udon (thick wheat noodles),Food_Common
+そば,そば,soba (buckwheat noodles),Food_Common
+パスタ,ぱすた,pasta,Food_Common
+弁当,べんとう,box lunch; bento,JLPT JLPT_4 JLPT_N4
+刺身,さしみ,sashimi; sliced raw fish,Food_Common
+寿司,すし,sushi,Food_Common
+天ぷら,てんぷら,tempura,Food_Common
+カレー,かれー,curry,Food_Common
+サラダ,さらだ,salad,Food_Common
+スープ,すーぷ,soup,Food_Common
+菓子,かし,confectionery; sweets; candy,JLPT JLPT_4 JLPT_N4
+飴,あめ,candy,JLPT JLPT_4 JLPT_N4
+果汁,かじゅう,fruit juice,Food_Common
+水,みず,water,JLPT JLPT_5 JLPT_N5
+お茶,おちゃ,tea (usually green tea),JLPT JLPT_5 JLPT_N5
+紅茶,こうちゃ,black tea,JLPT JLPT_5 JLPT_N5
+コーヒー,こーひー,coffee,JLPT JLPT_5 JLPT_N5
+牛乳,ぎゅうにゅう,milk,JLPT JLPT_5 JLPT_N5
+お酒,おさけ,alcohol; sake,JLPT JLPT_5 JLPT_N5
+ビール,びーる,beer,JLPT JLPT_5 JLPT_N5
+ワイン,わいん,wine,Food_Common
+ジュース,じゅーす,juice,JLPT JLPT_5 JLPT_N5
+料理,りょうり,cooking; cuisine,JLPT JLPT_5 JLPT_N5
+味,あじ,flavor; taste,JLPT JLPT_4 JLPT_N4
+甘い,あまい,sweet,JLPT JLPT_5 JLPT_N5
+辛い,からい,spicy; salty,JLPT JLPT_5 JLPT_N5
+苦い,にがい,bitter,JLPT JLPT_4 JLPT_N4
