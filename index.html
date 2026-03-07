@@ -72,7 +72,6 @@
     .list-floating-button { position: absolute; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; }
     .settings-button-bottom { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; }
 
-    /* Base overlays */
     .overlay-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s; transform: translateY(100%); z-index: 10; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; }
     .overlay-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
     .overlay-menu-content { display: flex; flex-direction: column; align-items: center; row-gap: 30px; width: 100%; }
@@ -83,7 +82,6 @@
     .toggle-knob { width: 16px; height: 16px; background-color: var(--background-color); border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
     .toggle-switch.is-active .toggle-knob { transform: translateX(22px); }
 
-    /* High Z-index for Edit Kana to ensure it stacks on top of Settings */
     .kana-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: transform 0.4s, opacity 0.4s; transform: translateY(100%); z-index: 100; opacity: 0; visibility: hidden; pointer-events: none; }
     .kana-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
     .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 4vh 8vw 0 8vw; width: 100%; }
@@ -129,6 +127,7 @@
           <template v-if="keyboardInputSetting && !showDetails">
             {{ userInput }}<span class="cursor"></span>
           </template>
+          
           <template v-else-if="showDetails">
              <template v-if="keyboardInputSetting">
                <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
@@ -151,8 +150,15 @@
     </div>
 
     <div class="settings-button-bottom" @click="settingsOpen = true">settings</div>
-    <div v-if="keyboardInputSetting" class="word-counter">streak: {{ streak }}</div>
-    <div v-else class="word-counter" v-if="wordFilter !== 'all' && wordList.length > 0">{{ activeWordIndex + 1 }} / {{ wordList.length }}</div>
+
+    <div v-if="keyboardInputSetting" class="word-counter">
+      streak: {{ streak }}
+    </div>
+
+    <div v-else class="word-counter" v-if="wordFilter !== 'all' && wordList.length > 0">
+      {{ activeWordIndex + 1 }} / {{ wordList.length }}
+    </div>
+
     <div class="list-floating-button" @click="listOpen = true">{{ currentListName }}</div>
 
     <div class="overlay-menu-container" :class="{ 'is-open': listOpen }">
@@ -196,7 +202,12 @@
           </div>
         </div>
       </div>
-      <div class="kana-character-menu-container" @pointerdown="startDrag" @pointermove="handleDrag" @pointerup="stopDrag" @pointerleave="stopDrag" @pointercancel="stopDrag">
+      <div class="kana-character-menu-container"
+           @pointerdown="startDrag" 
+           @pointermove="handleDrag" 
+           @pointerup="stopDrag"
+           @pointerleave="stopDrag"
+           @pointercancel="stopDrag">
         <div v-for="(char, index) in (alphabet === 'hiragana' ? hChars : kChars)" :key="index">
           <div v-if="char === ' '"></div>
           <div v-else-if="!isKana(char)" class="kana-menu-romaji-label" @click.stop="toggleGroup(char)">{{ char }}</div>
@@ -217,12 +228,17 @@
         const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
         const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), kanaOpen = ref(false), kanaHamburgerOpen = ref(false);
         const keyboardInputSetting = ref(false), showKanjiSetting = ref(false), kanjiOnlySetting = ref(false), darkModeSetting = ref(false);
-        const streak = ref(0), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all"), alphabet = ref("hiragana"), currentCSV = ref([]);
-        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]), isKeyboardOpen = ref(false);
-        const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
+        const streak = ref(0), catSlash = ref("/"), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
+        const alphabet = ref("hiragana"), currentCSV = ref([]);
+        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
+        const isKeyboardOpen = ref(false);
+
+        const isDragging = ref(false);
+        const dragAction = ref(null);
+        const lastToggledChar = ref(null);
 
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "パ", "ピ", "ぷ", "ぺ", "ぽ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: '★' };
 
         const activeWordData = computed(() => wordList.value[activeWordIndex.value]);
@@ -295,6 +311,7 @@
         const updateWords = () => {
           wordList.value = dictionary.value.filter(w => {
             const kana = w.kana[0].text;
+            // CORRECTED: Only filter by Kanji existence IF kanjiOnlySetting is true
             if (kanjiOnlySetting.value && !w.kanji?.[0]?.text) return false;
             for (let c of kana) { 
               if (c === "ー") continue;
@@ -313,10 +330,8 @@
         const handleDrag = (e) => { if (!isDragging.value) return; const el = document.elementFromPoint(e.clientX, e.clientY); const char = el?.dataset?.char; if (char && char !== lastToggledChar.value) { if (dragAction.value === 'add') selectedKana.add(char); else selectedKana.delete(char); lastToggledChar.value = char; } };
         const stopDrag = () => { if (isDragging.value) { isDragging.value = false; dragAction.value = null; lastToggledChar.value = null; updateWords(); } };
 
-        /* Smooth Transition Logic */
         const transitionToKanaMenu = () => {
           kanaOpen.value = true;
-          // Wait for the kana menu to cover the screen (approx transition time)
           setTimeout(() => { settingsOpen.value = false; }, 400);
         };
         const openKanaMenuDirect = () => { kanaOpen.value = true; };
