@@ -1,18 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
-  <title>kana.build</title>
-  
-  <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  
-  <!-- 1. Static theme-color: Android uses this for the initial launch color -->
-  <meta name="theme-color" id="theme-color-meta" content="#ffffff">
-  
-  <!-- 2. Optimized Launch Script: Runs immediately to prevent the "Black Bar" on cold boot -->
+  <!-- 1. INSTANT THEME DETECTION (Must be first) -->
   <script>
     (function() {
       try {
@@ -29,21 +18,32 @@
         };
         var color = themeColors[savedTheme] || '#ffffff';
         
-        // Update the meta tag immediately
-        var meta = document.getElementById('theme-color-meta');
-        if (meta) meta.setAttribute('content', color);
-        
-        // Force the background color onto the root elements immediately 
-        // This is what prevents the "line" and the "black flash" on Android
+        // Tells the browser and the OS (Pixel) the exact color and scheme immediately
+        var isDark = ['dark', 'gyokuro', 'yozora', 'kissaten'].includes(savedTheme);
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
         document.documentElement.style.backgroundColor = color;
         
-        // Pre-apply the class so CSS variables are ready before Vue loads
+        // Create/Update the meta tag before the browser finishes parsing the head
+        var meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.content = color;
+        meta.id = 'theme-color-meta';
+        document.head.appendChild(meta);
+        
         if (savedTheme !== 'light') {
           document.documentElement.classList.add('theme-' + savedTheme);
         }
       } catch(e) {}
     })();
   </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
+  <title>kana.build</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/wanakana"></script>
@@ -65,7 +65,9 @@
       user-select: none;
     }
 
-    /* Target html/body specifically to ensure themes apply to the very edges */
+    /* Force the HTML root to always match the theme background */
+    html { background-color: var(--background-color); transition: background-color 0.3s ease; }
+
     html.theme-dark, body.theme-dark, .theme-dark {
       --text-color: #dfdfdf;
       --text-color-light: #b5b5b5;
@@ -165,7 +167,6 @@
       color: var(--text-color); 
       font-family: sans-serif; 
       overflow: hidden; 
-      transition: background-color 0.3s ease, color 0.3s ease; 
     }
     #app { height: 100%; width: 100%; position: relative; }
     .app-container { display: grid; grid-template-rows: 1fr 1fr 1fr; height: 100%; width: 100%; }
@@ -489,7 +490,6 @@
 
     createApp({
       setup() {
-        // --- REFS & STATE ---
         const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
         const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), inputModeOpen = ref(false), themeOpen = ref(false), kanaOpen = ref(false), aboutOpen = ref(false);
         const keyboardInputSetting = ref(false), vocalInputSetting = ref(false), selfGradeSetting = ref(false), showKanjiSetting = ref(false), kanjiOnlySetting = ref(false);
@@ -500,9 +500,8 @@
         const isKeyboardOpen = ref(false);
         const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
 
-        // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "バ", "ビ", "ブ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ザ", "ジ", "ズ", "ぜ", "ぞ", "d", "だ", "ぢ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: '★' };
 
         const themes = [
@@ -511,12 +510,11 @@
           { id: 'gyokuro', color: '#485c46', name: 'gyokuro' },
           { id: 'matcha', color: '#7b9468', name: 'matcha' },
           { id: 'yozora', color: '#4a5e78', name: 'yozora' },
-          { id: 'kissaten', color: '#4a3831', name: 'kissaten' },
+          { id: 'kissaten', color: '#8a6b58', name: 'kissaten' },
           { id: 'koyo', color: '#c76d4a', name: 'kōyō' },
           { id: 'sakura', color: '#d18ca8', name: 'sakura' }
         ];
 
-        // --- SPEECH RECOGNITION ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         if (SpeechRecognition) {
@@ -526,7 +524,6 @@
           recognition.interimResults = false;
         }
 
-        // --- STATS LOGIC ---
         const localStats = JSON.parse(localStorage.getItem('appStats')) || {};
         const stats = reactive({
           totalWords: localStats.totalWords || 0, 
@@ -553,7 +550,6 @@
             saveStats();
         };
 
-        // --- COMPUTED PROPERTIES ---
         const activeWordData = computed(() => wordList.value[activeWordIndex.value]);
         const activeWord = computed(() => activeWordData.value?.text || "...");
         const activeKanji = computed(() => activeWordData.value?.kanji || "");
@@ -639,7 +635,6 @@
         const currentTheme = ref('light');
         const currentThemeName = computed(() => themes.find(t => t.id === currentTheme.value)?.name);
 
-        // --- THEME ENGINE ---
         const applyTheme = (themeId) => {
           themes.forEach(t => {
             document.body.classList.remove(`theme-${t.id}`);
@@ -663,11 +658,13 @@
           };
           
           var color = themeColors[themeId];
+          var isDark = ['dark', 'gyokuro', 'yozora', 'kissaten'].includes(themeId);
+          
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
           document.getElementById('theme-color-meta')?.setAttribute('content', color);
           document.documentElement.style.backgroundColor = color;
         };
 
-        // --- CORE FUNCTIONS ---
         const toggleStar = () => {
           if (isStarred.value) starredWords.delete(activeWord.value);
           else starredWords.add(activeWord.value);
@@ -774,7 +771,6 @@
           saveStats();
         };
 
-        // --- VOCAL INPUT HANDLERS ---
         const startRecording = () => {
           if (!recognition || isRecording.value) return;
           isRecording.value = true;
@@ -814,7 +810,6 @@
           showDetails.value = true;
         };
 
-        // --- MENU/UI HANDLERS ---
         const resetList = () => { updateWords(); settingsOpen.value = false; listOpen.value = false; };
         const openStats = () => { statsOpen.value = true; };
         const closeStats = () => { statsOpen.value = false; };
@@ -842,7 +837,6 @@
         const handleDrag = (e) => { if (!isDragging.value) return; const el = document.elementFromPoint(e.clientX, e.clientY); const char = el?.dataset?.char; if (char && char !== lastToggledChar.value) { if (dragAction.value === 'add') selectedKana.add(char); else selectedKana.delete(char); lastToggledChar.value = char; } };
         const stopDrag = () => { if (isDragging.value) { isDragging.value = false; dragAction.value = null; lastToggledChar.value = null; updateWords(); } };
 
-        // --- LIFECYCLE & WATCHERS ---
         onMounted(async () => {
           let baseHeight = window.innerHeight;
           const setVh = () => { const currentHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight; if (currentHeight > baseHeight) baseHeight = currentHeight; document.documentElement.style.setProperty('--vh', `${currentHeight}px`); isKeyboardOpen.value = (baseHeight - currentHeight) > 150; window.scrollTo(0, 0); };
