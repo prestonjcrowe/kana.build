@@ -2,13 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
   <title>kana.build</title>
   
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   
+  <!-- This inline script instantly grabs the saved theme and tells iOS what color to paint the status bar BEFORE the app renders -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('currentTheme') || 'light';
+        var themeColors = {
+          'light': '#ffffff',
+          'dark': '#1a1a1a',
+          'matcha': '#e2e8d3',
+          'gyokuro': '#212922',
+          'sakura': '#fce0ea',
+          'yozora': '#1e222b',
+          'kissaten': '#4a3831',
+          'koyo': '#f7dfd2'
+        };
+        var color = themeColors[savedTheme] || '#ffffff';
+        var meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.content = color;
+        document.head.appendChild(meta);
+      } catch(e) {}
+    })();
+  </script>
+
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/wanakana"></script>
   <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
@@ -94,19 +118,6 @@
       --toggle-bg-on: #8a99a8;
     }
 
-    body.theme-koyo {
-      --background-color: #f7dfd2;
-      --text-color: #825746;
-      --text-color-light: #c49c89;
-      --text-color-dark: #a37460;
-      --text-color-darker: #4a2c20;
-      --selected-kana-bg: #c76d4a;
-      --error-color: #d64933; 
-      --success-color: #5b8a72; 
-      --toggle-bg-off: #e3cec3;
-      --toggle-bg-on: #c76d4a;
-    }
-
     body.theme-kissaten {
       --background-color: #4a3831;
       --text-color: #e8d5c4;
@@ -118,6 +129,19 @@
       --success-color: #6c9a79; 
       --toggle-bg-off: #5c4a42;
       --toggle-bg-on: #8a6b58;
+    }
+
+    body.theme-koyo {
+      --background-color: #f7dfd2;
+      --text-color: #825746;
+      --text-color-light: #c49c89;
+      --text-color-dark: #a37460;
+      --text-color-darker: #4a2c20;
+      --selected-kana-bg: #c76d4a;
+      --error-color: #d64933; 
+      --success-color: #5b8a72; 
+      --toggle-bg-off: #e3cec3;
+      --toggle-bg-on: #c76d4a;
     }
 
     * { box-sizing: border-box; padding: 0; margin: 0; -webkit-tap-highlight-color: transparent; }
@@ -204,7 +228,7 @@
       border-radius: 50%;
       cursor: pointer;
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-      box-shadow: 0 0 0 1px var(--text-color-light); /* Faint outline so matching colors don't vanish */
+      box-shadow: 0 0 0 1px var(--text-color-light); 
     }
     .theme-circle:active {
       transform: scale(0.9);
@@ -239,6 +263,18 @@
   </style>
 </head>
 <body>
+  <!-- This perfectly syncs your body background color before Vue loads to prevent white flashes -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('currentTheme') || 'light';
+        if (savedTheme !== 'light') {
+          document.body.classList.add('theme-' + savedTheme);
+        }
+      } catch(e) {}
+    })();
+  </script>
+
   <div id="app">
     <input type="text" ref="keyboardTrigger" class="hidden-input" v-model="userInput" @keydown.enter="handleEnter" autocapitalize="none" />
 
