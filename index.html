@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- 1. INSTANT THEME DETECTION (Must be first) -->
+  <!-- 1. THE PIXEL RESCUE SCRIPT (Must be at the very top of <head>) -->
   <script>
     (function() {
       try {
@@ -17,22 +17,25 @@
           'koyo': '#f7dfd2'
         };
         var color = themeColors[savedTheme] || '#ffffff';
-        
-        // Tells the browser and the OS (Pixel) the exact color and scheme immediately
         var isDark = ['dark', 'gyokuro', 'yozora', 'kissaten'].includes(savedTheme);
+
+        // This tells the Pixel OS exactly which icon set (white/black) to use for the status bar
         document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+        
+        // This paints the root background BEFORE the browser even starts looking at CSS
         document.documentElement.style.backgroundColor = color;
         
-        // Create/Update the meta tag before the browser finishes parsing the head
+        // Apply the theme class to the root so CSS variables are ready immediately
+        if (savedTheme !== 'light') {
+          document.documentElement.classList.add('theme-' + savedTheme);
+        }
+
+        // Create the meta theme-color tag dynamically if it doesn't exist
         var meta = document.createElement('meta');
         meta.name = 'theme-color';
         meta.content = color;
         meta.id = 'theme-color-meta';
         document.head.appendChild(meta);
-        
-        if (savedTheme !== 'light') {
-          document.documentElement.classList.add('theme-' + savedTheme);
-        }
       } catch(e) {}
     })();
   </script>
@@ -65,8 +68,11 @@
       user-select: none;
     }
 
-    /* Force the HTML root to always match the theme background */
-    html { background-color: var(--background-color); transition: background-color 0.3s ease; }
+    /* Important: The root HTML element must transition its background to prevent the 'line' */
+    html { 
+      background-color: var(--background-color); 
+      transition: background-color 0.3s ease;
+    }
 
     html.theme-dark, body.theme-dark, .theme-dark {
       --text-color: #dfdfdf;
@@ -490,6 +496,7 @@
 
     createApp({
       setup() {
+        // --- REFS & STATE ---
         const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
         const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), inputModeOpen = ref(false), themeOpen = ref(false), kanaOpen = ref(false), aboutOpen = ref(false);
         const keyboardInputSetting = ref(false), vocalInputSetting = ref(false), selfGradeSetting = ref(false), showKanjiSetting = ref(false), kanjiOnlySetting = ref(false);
@@ -500,8 +507,9 @@
         const isKeyboardOpen = ref(false);
         const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
 
+        // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ザ", "ジ", "ズ", "ぜ", "ぞ", "d", "だ", "ぢ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ザ", "ジ", "ズ", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "バ", "ビ", "ブ", "べ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: '★' };
 
         const themes = [
@@ -515,6 +523,7 @@
           { id: 'sakura', color: '#d18ca8', name: 'sakura' }
         ];
 
+        // --- SPEECH RECOGNITION ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         if (SpeechRecognition) {
@@ -524,6 +533,7 @@
           recognition.interimResults = false;
         }
 
+        // --- STATS LOGIC ---
         const localStats = JSON.parse(localStorage.getItem('appStats')) || {};
         const stats = reactive({
           totalWords: localStats.totalWords || 0, 
@@ -550,6 +560,7 @@
             saveStats();
         };
 
+        // --- COMPUTED PROPERTIES ---
         const activeWordData = computed(() => wordList.value[activeWordIndex.value]);
         const activeWord = computed(() => activeWordData.value?.text || "...");
         const activeKanji = computed(() => activeWordData.value?.kanji || "");
@@ -635,6 +646,7 @@
         const currentTheme = ref('light');
         const currentThemeName = computed(() => themes.find(t => t.id === currentTheme.value)?.name);
 
+        // --- THEME ENGINE ---
         const applyTheme = (themeId) => {
           themes.forEach(t => {
             document.body.classList.remove(`theme-${t.id}`);
@@ -660,11 +672,15 @@
           var color = themeColors[themeId];
           var isDark = ['dark', 'gyokuro', 'yozora', 'kissaten'].includes(themeId);
           
+          // These two lines are critical for Pixel/Android status bar behavior
           document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-          document.getElementById('theme-color-meta')?.setAttribute('content', color);
           document.documentElement.style.backgroundColor = color;
+          
+          var meta = document.getElementById('theme-color-meta');
+          if (meta) meta.setAttribute('content', color);
         };
 
+        // --- CORE FUNCTIONS ---
         const toggleStar = () => {
           if (isStarred.value) starredWords.delete(activeWord.value);
           else starredWords.add(activeWord.value);
