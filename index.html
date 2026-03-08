@@ -334,7 +334,7 @@
         const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
         const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), inputModeOpen = ref(false), kanaOpen = ref(false), kanaHamburgerOpen = ref(false);
         const keyboardInputSetting = ref(false), vocalInputSetting = ref(false), selfGradeSetting = ref(false), showKanjiSetting = ref(false), kanjiOnlySetting = ref(false), darkModeSetting = ref(false);
-        const streak = ref(0), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
+        const streak = ref(parseInt(localStorage.getItem('currentStreak') || '0')), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
         const selfGradeResult = ref(null), isRecording = ref(false);
         const alphabet = ref("hiragana"), currentCSV = ref([]);
         const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
@@ -373,6 +373,7 @@
         const resetStats = () => { 
           Object.assign(stats, { totalWords: 0, bestStreak: 0, correct: 0, mistakes: 0, wordFrequency: {}, timeLoggedSeconds: 0, completedLists: [] }); 
           saveStats(); 
+          streak.value = 0;
         };
 
         const trackWordAppearance = (word) => {
@@ -697,6 +698,7 @@
           localStorage.setItem('kanjiOnlySetting', kanjiOnlySetting.value);
         });
         
+        watch(streak, (v) => localStorage.setItem('currentStreak', v.toString()));
         watch(kanjiOnlySetting, () => updateWords());
         watch(showKanjiSetting, (v) => { if (!v) kanjiOnlySetting.value = false; });
 
