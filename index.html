@@ -6,7 +6,7 @@
   <title>kana.build</title>
   
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
@@ -553,7 +553,10 @@
 
         const handleSelfGrade = (isCorrect, event) => {
           event.stopPropagation();
-          if (selfGradeResult.value !== null) return; 
+          if (selfGradeResult.value !== null) {
+            handleScreenTap();
+            return; 
+          }
           selfGradeResult.value = isCorrect ? 'correct' : 'incorrect';
           if (isCorrect) {
             streak.value++; stats.correct++;
