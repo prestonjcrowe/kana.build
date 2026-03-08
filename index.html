@@ -123,13 +123,9 @@
     .kana-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: transform 0.4s, opacity 0.4s; transform: translateY(100%); z-index: 100; opacity: 0; visibility: hidden; pointer-events: none; }
     .kana-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
     .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 4vh 8vw 0 8vw; width: 100%; }
-    .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 3vh; text-align: left; }
-    .hamburger-container { position: relative; width: 3vh; text-align: right; }
-    .kana-menu-list-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); }
-    .kana-menu-alphabet-button { font-size: 1.6vh; cursor: pointer; border-radius: 0.6em; padding: 0.4em 1.4em; border: 1px solid var(--text-color-dark); color: var(--text-color-dark); transform: translateX(2.3vh); }
-    .hamburger-dropdown { position: absolute; top: 100%; right: 0; margin-top: 1vh; background-color: var(--background-color); border: 1px solid var(--text-color-dark); border-radius: 0.6em; padding: 1.5vh 2vh; box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 20; white-space: nowrap; text-align: center; }
-    .hamburger-option { color: var(--text-color-dark); font-size: 1.6vh; cursor: pointer; padding: 0.5vh 0; }
-    .hamburger-option:hover { color: var(--text-color-darker); font-weight: bold; }
+    .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 3.8vh; text-align: left; }
+    .kana-menu-list-button { font-size: 3.1vh; cursor: pointer; color: var(--text-color-dark); width: 3.8vh; text-align: right; line-height: 1; }
+    .kana-menu-alphabet-button { font-size: 1.6vh; cursor: pointer; padding: 0.4em 1.4em; color: var(--text-color-dark); transform: translateX(2.3vh); }
     
     .kana-character-menu-container { padding-top: 2vh; display: grid; grid-template-columns: repeat(6, 1fr); margin: auto; gap: 0.6vh; width: fit-content; touch-action: none; }
     .kana-menu-romaji-label { font-size: 1.4vh; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color-dark); height: 4vh; }
@@ -236,6 +232,7 @@
           <div class="toggle-switch" :class="{ 'is-active': darkModeSetting }"><div class="toggle-knob"></div></div>
         </div>
       </div>
+      <div class="list-floating-button" @click="aboutOpen = true">about</div>
     </div>
 
     <!-- Input Mode Overlay -->
@@ -296,16 +293,19 @@
       </div>
     </div>
 
+    <!-- About Overlay -->
+    <div class="overlay-menu-container" :class="{ 'is-open': aboutOpen }" style="z-index: 15;">
+      <div class="back-arrow-fixed" @click="aboutOpen = false">←</div>
+      <div class="overlay-menu-content">
+        <div style="font-size: 1.4em; letter-spacing: .1em; color: var(--text-color);">hi preston :3</div>
+      </div>
+    </div>
+
     <div class="kana-menu-container" :class="{ 'is-open': kanaOpen }">
       <div class="kana-menu-controls-container">
         <div class="kana-menu-exit-button" @click="closeKanaMenu">←</div>
         <div class="kana-menu-alphabet-button" @click="toggleAlphabet">{{ alphabet }}</div>
-        <div class="hamburger-container">
-          <div class="kana-menu-list-button" @click="kanaHamburgerOpen = !kanaHamburgerOpen">☰</div>
-          <div v-if="kanaHamburgerOpen" class="hamburger-dropdown">
-            <div class="hamburger-option" @click="toggleSelectAll">{{ isAllSelected ? 'deselect all' : 'select all' }}</div>
-          </div>
-        </div>
+        <div class="kana-menu-list-button" @click="toggleSelectAll">{{ isAllSelected ? '●' : '○' }}</div>
       </div>
       <div class="kana-character-menu-container"
            @pointerdown="startDrag" 
@@ -332,7 +332,7 @@
       setup() {
         // --- REFS & STATE ---
         const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
-        const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), inputModeOpen = ref(false), kanaOpen = ref(false), kanaHamburgerOpen = ref(false);
+        const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), inputModeOpen = ref(false), kanaOpen = ref(false), aboutOpen = ref(false);
         const keyboardInputSetting = ref(false), vocalInputSetting = ref(false), selfGradeSetting = ref(false), showKanjiSetting = ref(false), kanjiOnlySetting = ref(false), darkModeSetting = ref(false);
         const streak = ref(parseInt(localStorage.getItem('currentStreak') || '0')), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
         const selfGradeResult = ref(null), isRecording = ref(false);
@@ -628,7 +628,7 @@
           const valid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
           const target = isAllSelected.value ? 'delete' : 'add';
           valid.forEach(c => target === 'delete' ? selectedKana.delete(c) : selectedKana.add(c));
-          updateWords(); kanaHamburgerOpen.value = false;
+          updateWords();
         };
 
         const toggleGroup = (label) => {
@@ -667,7 +667,7 @@
           document.querySelector('meta[name="theme-color"]').setAttribute('content', initialColor);
 
           window.addEventListener('keydown', (e) => { 
-             if (settingsOpen.value || listOpen.value || kanaOpen.value || statsOpen.value || achievementsOpen.value || inputModeOpen.value) return; 
+             if (settingsOpen.value || listOpen.value || kanaOpen.value || statsOpen.value || achievementsOpen.value || inputModeOpen.value || aboutOpen.value) return; 
              if (keyboardInputSetting.value && !showDetails.value) keyboardTrigger.value?.focus(); 
              else if (e.code === 'Space') handleScreenTap(); 
           });
@@ -703,7 +703,7 @@
         watch(showKanjiSetting, (v) => { if (!v) kanjiOnlySetting.value = false; });
 
         return { 
-          dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, statsOpen, achievementsOpen, inputModeOpen, kanaOpen, kanaHamburgerOpen,
+          dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, statsOpen, achievementsOpen, inputModeOpen, kanaOpen, aboutOpen,
           keyboardInputSetting, vocalInputSetting, selfGradeSetting, selfGradeResult, showKanjiSetting, kanjiOnlySetting, darkModeSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
           activeWord, activeKanji, activeDefinition, isStarred, currentListName, feedbackChars, hasTypingErrors, stats, achievements, isRecording, inputMode,
           accuracyDisplay, activeKanaDisplay, topWordDisplay, timeLoggedDisplay, resetList, openStats, closeStats, openAchievements, closeAchievements, resetStats,
