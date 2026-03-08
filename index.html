@@ -528,7 +528,10 @@
         };
 
         const handleScreenTap = () => {
-          if (showDetails.value) nextWord();
+          if (showDetails.value) {
+            if (selfGradeSetting.value && selfGradeResult.value === null) return;
+            nextWord();
+          }
           else if (keyboardInputSetting.value) nextTick(() => keyboardTrigger.value?.focus());
           else if (!vocalInputSetting.value) showDetails.value = true;
         };
