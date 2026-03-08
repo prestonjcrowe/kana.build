@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-capable" content="yes">
   
-  <!-- 1. Static theme-color for iOS to hook onto initially -->
+  <!-- 1. Static theme-color: Android uses this for the initial launch color -->
   <meta name="theme-color" id="theme-color-meta" content="#ffffff">
   
-  <!-- 2. This inline script updates the existing tag BEFORE the app renders -->
+  <!-- 2. Optimized Launch Script: Runs immediately to prevent the "Black Bar" on cold boot -->
   <script>
     (function() {
       try {
@@ -27,10 +27,19 @@
           'kissaten': '#4a3831',
           'koyo': '#f7dfd2'
         };
-        var color = themeColors[savedTheme];
-        if (color) {
-          document.getElementById('theme-color-meta').setAttribute('content', color);
-          document.documentElement.style.backgroundColor = color; // Paints the screen instantly
+        var color = themeColors[savedTheme] || '#ffffff';
+        
+        // Update the meta tag immediately
+        var meta = document.getElementById('theme-color-meta');
+        if (meta) meta.setAttribute('content', color);
+        
+        // Force the background color onto the root elements immediately 
+        // This is what prevents the "line" and the "black flash" on Android
+        document.documentElement.style.backgroundColor = color;
+        
+        // Pre-apply the class so CSS variables are ready before Vue loads
+        if (savedTheme !== 'light') {
+          document.documentElement.classList.add('theme-' + savedTheme);
         }
       } catch(e) {}
     })();
@@ -56,7 +65,8 @@
       user-select: none;
     }
 
-    body.theme-dark {
+    /* Target html/body specifically to ensure themes apply to the very edges */
+    html.theme-dark, body.theme-dark, .theme-dark {
       --text-color: #dfdfdf;
       --text-color-light: #b5b5b5;
       --text-color-dark: #d5d5d5;
@@ -69,7 +79,7 @@
       --toggle-bg-on: #d5d5d5;
     }
 
-    body.theme-matcha {
+    html.theme-matcha, body.theme-matcha, .theme-matcha {
       --background-color: #e2e8d3; 
       --text-color: #5c7050; 
       --text-color-light: #9cb38d; 
@@ -82,7 +92,7 @@
       --toggle-bg-on: #7b9468;
     }
 
-    body.theme-gyokuro {
+    html.theme-gyokuro, body.theme-gyokuro, .theme-gyokuro {
       --background-color: #212922; 
       --text-color: #a3b89e; 
       --text-color-light: #6c8067; 
@@ -95,7 +105,7 @@
       --toggle-bg-on: #a3b89e;
     }
 
-    body.theme-sakura {
+    html.theme-sakura, body.theme-sakura, .theme-sakura {
       --background-color: #fce0ea;
       --text-color: #a87b8d;
       --text-color-light: #d4aebf;
@@ -108,7 +118,7 @@
       --toggle-bg-on: #d18ca8;
     }
 
-    body.theme-yozora {
+    html.theme-yozora, body.theme-yozora, .theme-yozora {
       --background-color: #1e222b;
       --text-color: #a9b4c2;
       --text-color-light: #69788a;
@@ -121,7 +131,7 @@
       --toggle-bg-on: #8a99a8;
     }
 
-    body.theme-kissaten {
+    html.theme-kissaten, body.theme-kissaten, .theme-kissaten {
       --background-color: #4a3831;
       --text-color: #e8d5c4;
       --text-color-light: #b59a8a;
@@ -134,7 +144,7 @@
       --toggle-bg-on: #8a6b58;
     }
 
-    body.theme-koyo {
+    html.theme-koyo, body.theme-koyo, .theme-koyo {
       --background-color: #f7dfd2;
       --text-color: #825746;
       --text-color-light: #c49c89;
@@ -148,7 +158,15 @@
     }
 
     * { box-sizing: border-box; padding: 0; margin: 0; -webkit-tap-highlight-color: transparent; }
-    body, html { height: var(--vh); width: 100%; background-color: var(--background-color); color: var(--text-color); font-family: sans-serif; overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease; }
+    body, html { 
+      height: var(--vh); 
+      width: 100%; 
+      background-color: var(--background-color); 
+      color: var(--text-color); 
+      font-family: sans-serif; 
+      overflow: hidden; 
+      transition: background-color 0.3s ease, color 0.3s ease; 
+    }
     #app { height: 100%; width: 100%; position: relative; }
     .app-container { display: grid; grid-template-rows: 1fr 1fr 1fr; height: 100%; width: 100%; }
     .banner-container { display: flex; flex-direction: column; align-items: center; padding-top: 5em; transition: padding-top 0.3s ease; }
@@ -266,18 +284,6 @@
   </style>
 </head>
 <body>
-  <!-- This perfectly syncs your body background color before Vue loads to prevent white flashes -->
-  <script>
-    (function() {
-      try {
-        var savedTheme = localStorage.getItem('currentTheme') || 'light';
-        if (savedTheme !== 'light') {
-          document.body.classList.add('theme-' + savedTheme);
-        }
-      } catch(e) {}
-    })();
-  </script>
-
   <div id="app">
     <input type="text" ref="keyboardTrigger" class="hidden-input" v-model="userInput" @keydown.enter="handleEnter" autocapitalize="none" />
 
@@ -496,7 +502,7 @@
 
         // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "バ", "ビ", "ブ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: '★' };
 
         const themes = [
@@ -635,9 +641,14 @@
 
         // --- THEME ENGINE ---
         const applyTheme = (themeId) => {
-          themes.forEach(t => document.body.classList.remove(`theme-${t.id}`));
+          themes.forEach(t => {
+            document.body.classList.remove(`theme-${t.id}`);
+            document.documentElement.classList.remove(`theme-${t.id}`);
+          });
+          
           if (themeId !== 'light') {
             document.body.classList.add(`theme-${themeId}`);
+            document.documentElement.classList.add(`theme-${themeId}`);
           }
           
           const themeColors = {
@@ -650,7 +661,10 @@
             'koyo': '#f7dfd2',
             'kissaten': '#4a3831'
           };
-          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[themeId]);
+          
+          var color = themeColors[themeId];
+          document.getElementById('theme-color-meta')?.setAttribute('content', color);
+          document.documentElement.style.backgroundColor = color;
         };
 
         // --- CORE FUNCTIONS ---
