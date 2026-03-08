@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-capable" content="yes">
   
-  <!-- 1. Static theme-color: Android uses this for the initial launch color -->
-  <meta name="theme-color" id="theme-color-meta" content="#ffffff">
+  <!-- 1. Single static theme-color meta tag -->
+  <meta name="theme-color" content="#ffffff">
   
-  <!-- 2. Optimized Launch Script: Runs immediately to prevent the "Black Bar" on cold boot -->
+  <!-- 2. Cleaned-up Launch Script -->
   <script>
     (function() {
       try {
@@ -32,22 +32,17 @@
 
         // Instant OS hint
         document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-        
-        // Force the background color onto the root elements immediately 
-        // This is what prevents the "line" and the "black flash" on Android
         document.documentElement.style.backgroundColor = color;
         
-        // Pre-apply the class so CSS variables are ready before Vue loads
         if (savedTheme !== 'light') {
           document.documentElement.classList.add('theme-' + savedTheme);
         }
 
-        // Create the meta theme-color tag dynamically if it doesn't exist
-        var meta = document.createElement('meta');
-        meta.name = 'theme-color';
-        meta.content = color;
-        meta.id = 'theme-color-meta';
-        document.head.appendChild(meta);
+        // Properly update the EXISTING meta tag instead of creating duplicates
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          meta.setAttribute('content', color);
+        }
       } catch(e) {}
     })();
   </script>
@@ -72,7 +67,15 @@
       user-select: none;
     }
 
-    /* Target html/body specifically to ensure themes apply to the very edges */
+    html { 
+      background-color: var(--background-color) !important;
+    }
+
+    body {
+      background-color: var(--background-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
     html.theme-dark, body.theme-dark, .theme-dark {
       --text-color: #dfdfdf;
       --text-color-light: #b5b5b5;
@@ -168,11 +171,9 @@
     body, html { 
       height: var(--vh); 
       width: 100%; 
-      background-color: var(--background-color); 
       color: var(--text-color); 
       font-family: sans-serif; 
       overflow: hidden; 
-      transition: background-color 0.3s ease, color 0.3s ease; 
     }
     #app { height: 100%; width: 100%; position: relative; }
     .app-container { display: grid; grid-template-rows: 1fr 1fr 1fr; height: 100%; width: 100%; }
@@ -572,12 +573,12 @@
 
         // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "べ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "べ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: 'starred' };
 
         const themes = [
           { id: 'light', color: '#ffffff', name: 'light' },
-          { id: 'dark', color: '#1a1a1a', name: 'dark' },
+          { id: 'dark', color: '#1a1a1a', name: 'ダーク' },
           { id: 'gyokuro', color: '#485c46', name: 'ぎょくろ' },
           { id: 'matcha', color: '#7b9468', name: 'まっちゃ' },
           { id: 'yoru', color: '#4a5e78', name: 'おやすみ' },
@@ -757,27 +758,18 @@
           var color = themeColors[themeId];
           var isDark = ['dark', 'gyokuro', 'yoru', 'kissaten'].includes(themeId);
           
-          // PIXEL FIX: OS only repaints if color-scheme toggles or layout shifts.
-          // 1. Force the background change instantly
           document.documentElement.style.backgroundColor = color;
-          
-          // 2. Briefly reset the color-scheme to the opposite of what we want
-          // This "jogs" Android into realizing it needs to re-evaluate the status bar.
-          document.documentElement.style.colorScheme = isDark ? 'light' : 'dark';
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 
-          // 3. Update the meta tag by replacing it entirely
-          var oldMeta = document.getElementById('theme-color-meta');
-          if (oldMeta) oldMeta.remove();
+          // We forcefully remove ALL theme-color tags (including duplicates from old bugs)
+          // and inject exactly ONE fresh tag to force Android Chrome to notice the change.
+          var existingMetas = document.querySelectorAll('meta[name="theme-color"]');
+          existingMetas.forEach(m => m.remove());
           
-          // 4. Final application in the next frame
-          requestAnimationFrame(() => {
-             document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-             var meta = document.createElement('meta');
-             meta.name = 'theme-color';
-             meta.content = color;
-             meta.id = 'theme-color-meta';
-             document.head.appendChild(meta);
-          });
+          var newMeta = document.createElement('meta');
+          newMeta.name = 'theme-color';
+          newMeta.content = color;
+          document.head.appendChild(newMeta);
         };
 
         // --- CORE FUNCTIONS ---
