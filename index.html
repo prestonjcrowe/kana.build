@@ -9,7 +9,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-capable" content="yes">
   
-  <!-- This inline script instantly grabs the saved theme and tells iOS what color to paint the status bar BEFORE the app renders -->
+  <!-- 1. Static theme-color for iOS to hook onto initially -->
+  <meta name="theme-color" id="theme-color-meta" content="#ffffff">
+  
+  <!-- 2. This inline script updates the existing tag BEFORE the app renders -->
   <script>
     (function() {
       try {
@@ -24,11 +27,11 @@
           'kissaten': '#4a3831',
           'koyo': '#f7dfd2'
         };
-        var color = themeColors[savedTheme] || '#ffffff';
-        var meta = document.createElement('meta');
-        meta.name = 'theme-color';
-        meta.content = color;
-        document.head.appendChild(meta);
+        var color = themeColors[savedTheme];
+        if (color) {
+          document.getElementById('theme-color-meta').setAttribute('content', color);
+          document.documentElement.style.backgroundColor = color; // Paints the screen instantly
+        }
       } catch(e) {}
     })();
   </script>
