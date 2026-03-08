@@ -12,7 +12,7 @@
   <!-- 1. Single static theme-color meta tag -->
   <meta name="theme-color" content="#ffffff">
   
-  <!-- 2. Cleaned-up Launch Script -->
+  <!-- 2. Cleaned-up Launch Script (No duplicates) -->
   <script>
     (function() {
       try {
@@ -579,12 +579,12 @@
         const themes = [
           { id: 'light', color: '#ffffff', name: 'light' },
           { id: 'dark', color: '#1a1a1a', name: 'dark' },
-          { id: 'gyokuro', color: '#485c46', name: 'ぎょくろ' },
-          { id: 'matcha', color: '#7b9468', name: 'まっちゃ' },
-          { id: 'yoru', color: '#4a5e78', name: 'おやすみ' },
-          { id: 'kissaten', color: '#8a6b58', name: 'コーヒー' },
-          { id: 'mikan', color: '#c76d4a', name: 'ミカン' },
-          { id: 'sakura', color: '#d18ca8', name: 'さくら' }
+          { id: 'gyokuro', color: '#485c46', name: 'gyokuro' },
+          { id: 'matcha', color: '#7b9468', name: 'matcha' },
+          { id: 'yoru', color: '#4a5e78', name: 'yozora' },
+          { id: 'kissaten', color: '#8a6b58', name: 'kissaten' },
+          { id: 'mikan', color: '#c76d4a', name: 'kōyō' },
+          { id: 'sakura', color: '#d18ca8', name: 'sakura' }
         ];
 
         // --- SPEECH RECOGNITION ---
@@ -701,13 +701,13 @@
             ];
         });
 
+        // BUG FIX: By passing the whole string instead of tokenizing, Wanakana correctly recognizes "フェ" as "fe" instead of breaking it into "fyea".
         const activeRomajiTarget = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "");
-        const activeRomajiDisplay = computed(() => activeWordData.value ? wanakana.tokenize(activeWordData.value.text).map(t => wanakana.toRomaji(t)).join('') : "");
+        const activeRomajiDisplay = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text) : "");
 
         const speakWord = () => {
           if (!('speechSynthesis' in window)) return;
           window.speechSynthesis.cancel();
-          // We speak the Kana to guarantee accurate pronunciation (vs passing Kanji directly)
           const utterance = new SpeechSynthesisUtterance(activeWord.value);
           utterance.lang = 'ja-JP';
           utterance.rate = 1.0; 
@@ -733,7 +733,6 @@
 
         // --- THEME ENGINE ---
         const applyTheme = (themeId) => {
-          // Remove old theme classes
           themes.forEach(t => {
             document.body.classList.remove(`theme-${t.id}`);
             document.documentElement.classList.remove(`theme-${t.id}`);
@@ -761,15 +760,11 @@
           document.documentElement.style.backgroundColor = color;
           document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 
-          // We forcefully remove ALL theme-color tags (including duplicates from old bugs)
-          // and inject exactly ONE fresh tag to force Android Chrome to notice the change.
-          var existingMetas = document.querySelectorAll('meta[name="theme-color"]');
-          existingMetas.forEach(m => m.remove());
-          
-          var newMeta = document.createElement('meta');
-          newMeta.name = 'theme-color';
-          newMeta.content = color;
-          document.head.appendChild(newMeta);
+          // BUG FIX: Modify the existing tag instead of creating duplicates
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute('content', color);
+          }
         };
 
         // --- CORE FUNCTIONS ---
