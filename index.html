@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <!-- Added viewport-fit=cover to remove the status bar line -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
   <title>kana.build</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/wanakana"></script>
@@ -94,19 +96,6 @@
       --toggle-bg-on: #8a99a8;
     }
 
-    body.theme-koyo {
-      --background-color: #f7dfd2;
-      --text-color: #825746;
-      --text-color-light: #c49c89;
-      --text-color-dark: #a37460;
-      --text-color-darker: #4a2c20;
-      --selected-kana-bg: #c76d4a;
-      --error-color: #d64933; 
-      --success-color: #5b8a72; 
-      --toggle-bg-off: #e3cec3;
-      --toggle-bg-on: #c76d4a;
-    }
-
     body.theme-kissaten {
       --background-color: #4a3831;
       --text-color: #e8d5c4;
@@ -118,6 +107,19 @@
       --success-color: #6c9a79; 
       --toggle-bg-off: #5c4a42;
       --toggle-bg-on: #8a6b58;
+    }
+
+    body.theme-koyo {
+      --background-color: #f7dfd2;
+      --text-color: #825746;
+      --text-color-light: #c49c89;
+      --text-color-dark: #a37460;
+      --text-color-darker: #4a2c20;
+      --selected-kana-bg: #c76d4a;
+      --error-color: #d64933; 
+      --success-color: #5b8a72; 
+      --toggle-bg-off: #e3cec3;
+      --toggle-bg-on: #c76d4a;
     }
 
     * { box-sizing: border-box; padding: 0; margin: 0; -webkit-tap-highlight-color: transparent; }
@@ -204,7 +206,7 @@
       border-radius: 50%;
       cursor: pointer;
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-      box-shadow: 0 0 0 1px var(--text-color-light); /* Faint outline so matching colors don't vanish */
+      box-shadow: 0 0 0 1px var(--text-color-light); 
     }
     .theme-circle:active {
       transform: scale(0.9);
