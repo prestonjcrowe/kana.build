@@ -19,9 +19,9 @@
         var color = themeColors[savedTheme] || '#ffffff';
         var isDark = ['dark', 'gyokuro', 'yozora', 'kissaten'].includes(savedTheme);
 
-        // Force background and scheme immediately for the OS
-        document.documentElement.style.backgroundColor = color;
+        // Instant OS hint
         document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+        document.documentElement.style.backgroundColor = color;
         
         if (savedTheme !== 'light') {
           document.documentElement.classList.add('theme-' + savedTheme);
@@ -65,11 +65,13 @@
       user-select: none;
     }
 
-    /* PIXEL FIX: html background must NOT transition. 
-       This ensures it is the final color the exact millisecond the OS samples it.
+    /* PIXEL FIX: We remove the transition from 'html' background. 
+       This makes the background change INSTANTLY so the OS sees the new color 
+       immediately for the status bar, while the 'body' and components 
+       can still fade nicely.
     */
     html { 
-      background-color: var(--background-color) !important;
+      background-color: var(--background-color); 
     }
 
     body {
@@ -511,7 +513,7 @@
 
         // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "ヤ", " ", "ユ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ぬ", "ね", "の", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: '★' };
 
         const themes = [
@@ -675,27 +677,19 @@
           var color = themeColors[themeId];
           var isDark = ['dark', 'gyokuro', 'yozora', 'kissaten'].includes(themeId);
           
-          // PIXEL FIX: OS only repaints if color-scheme toggles or layout shifts.
-          // 1. Force the background change instantly
+          // Force immediate background change for OS/Pixel sampling
           document.documentElement.style.backgroundColor = color;
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
           
-          // 2. Briefly reset the color-scheme to the opposite of what we want
-          // This "jogs" Android into realizing it needs to re-evaluate the status bar.
-          document.documentElement.style.colorScheme = isDark ? 'light' : 'dark';
-
-          // 3. Update the meta tag by replacing it entirely
+          // Force-refresh the meta tag by replacing it
           var oldMeta = document.getElementById('theme-color-meta');
           if (oldMeta) oldMeta.remove();
           
-          // 4. Final application in the next frame
-          requestAnimationFrame(() => {
-             document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-             var meta = document.createElement('meta');
-             meta.name = 'theme-color';
-             meta.content = color;
-             meta.id = 'theme-color-meta';
-             document.head.appendChild(meta);
-          });
+          var meta = document.createElement('meta');
+          meta.name = 'theme-color';
+          meta.content = color;
+          meta.id = 'theme-color-meta';
+          document.head.appendChild(meta);
         };
 
         // --- CORE FUNCTIONS ---
