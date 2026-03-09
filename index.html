@@ -1,7 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- 1. INSTANT THEME DETECTION (Must be first) -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
+  <title>kana.build</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  
+  <!-- 1. Single static theme-color meta tag -->
+  <meta name="theme-color" content="#ffffff">
+  
+  <!-- 2. Cleaned-up Launch Script -->
   <script>
     (function() {
       try {
@@ -12,38 +23,29 @@
           'matcha': '#e2e8d3',
           'gyokuro': '#212922',
           'sakura': '#fce0ea',
-          'yozora': '#1e222b',
+          'yoru': '#1e222b',
           'kissaten': '#4a3831',
-          'koyo': '#f7dfd2'
+          'mikan': '#f7dfd2'
         };
         var color = themeColors[savedTheme] || '#ffffff';
-        
-        // Tells the browser and the OS (Pixel) the exact color and scheme immediately
-        var isDark = ['dark', 'gyokuro', 'yozora', 'kissaten'].includes(savedTheme);
+        var isDark = ['dark', 'gyokuro', 'yoru', 'kissaten'].includes(savedTheme);
+
+        // Instant OS hint
         document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
         document.documentElement.style.backgroundColor = color;
-        
-        // Create/Update the meta tag before the browser finishes parsing the head
-        var meta = document.createElement('meta');
-        meta.name = 'theme-color';
-        meta.content = color;
-        meta.id = 'theme-color-meta';
-        document.head.appendChild(meta);
         
         if (savedTheme !== 'light') {
           document.documentElement.classList.add('theme-' + savedTheme);
         }
+
+        // Properly update the EXISTING meta tag instead of creating duplicates
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          meta.setAttribute('content', color);
+        }
       } catch(e) {}
     })();
   </script>
-
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
-  <title>kana.build</title>
-  
-  <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-capable" content="yes">
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/wanakana"></script>
@@ -54,7 +56,7 @@
       --text-color: #626262;
       --text-color-light: #b5afa7;
       --text-color-dark: #c3c3c3;
-      --text-color-darker: #414649;
+      --text-color-darker: #5f6061;
       --selected-kana-bg: #676767;
       --background-color: white;
       --error-color: #ff6b6b;
@@ -65,14 +67,20 @@
       user-select: none;
     }
 
-    /* Force the HTML root to always match the theme background */
-    html { background-color: var(--background-color); transition: background-color 0.3s ease; }
+    html { 
+      background-color: var(--background-color) !important;
+    }
+
+    body {
+      background-color: var(--background-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
 
     html.theme-dark, body.theme-dark, .theme-dark {
       --text-color: #dfdfdf;
       --text-color-light: #b5b5b5;
       --text-color-dark: #d5d5d5;
-      --text-color-darker: #ffffff;
+      --text-color-darker: #dddddd;
       --selected-kana-bg: #4c4c4c;
       --background-color: #1a1a1a;
       --error-color: #ff5252;
@@ -86,7 +94,7 @@
       --text-color: #5c7050; 
       --text-color-light: #9cb38d; 
       --text-color-dark: #86997a; 
-      --text-color-darker: #2b3625; 
+      --text-color-darker: #5b744d; 
       --selected-kana-bg: #7b9468; 
       --error-color: #e07a5f; 
       --success-color: #4a7c59; 
@@ -99,7 +107,7 @@
       --text-color: #a3b89e; 
       --text-color-light: #6c8067; 
       --text-color-dark: #c5d9c0; 
-      --text-color-darker: #e2eedf; 
+      --text-color-darker: #c3d3bf; 
       --selected-kana-bg: #485c46; 
       --error-color: #e07a5f; 
       --success-color: #6c9a79; 
@@ -112,7 +120,7 @@
       --text-color: #a87b8d;
       --text-color-light: #d4aebf;
       --text-color-dark: #b88a9e;
-      --text-color-darker: #5e3a4b;
+      --text-color-darker: #c688a6;
       --selected-kana-bg: #d18ca8;
       --error-color: #e56b6f; 
       --success-color: #7fb069; 
@@ -120,12 +128,12 @@
       --toggle-bg-on: #d18ca8;
     }
 
-    html.theme-yozora, body.theme-yozora, .theme-yozora {
+    html.theme-yoru, body.theme-yoru, .theme-yoru {
       --background-color: #1e222b;
       --text-color: #a9b4c2;
       --text-color-light: #69788a;
       --text-color-dark: #8a99a8;
-      --text-color-darker: #e2e8f0;
+      --text-color-darker: #c3cbd6;
       --selected-kana-bg: #4a5e78;
       --error-color: #ff6b6b;
       --success-color: #48cae4; 
@@ -138,7 +146,7 @@
       --text-color: #e8d5c4;
       --text-color-light: #b59a8a;
       --text-color-dark: #f5e6d3;
-      --text-color-darker: #ffffff;
+      --text-color-darker: #d9cdca;
       --selected-kana-bg: #8a6b58;
       --error-color: #e56b6f; 
       --success-color: #6c9a79; 
@@ -146,12 +154,12 @@
       --toggle-bg-on: #8a6b58;
     }
 
-    html.theme-koyo, body.theme-koyo, .theme-koyo {
+    html.theme-mikan, body.theme-mikan, .theme-mikan {
       --background-color: #f7dfd2;
       --text-color: #825746;
       --text-color-light: #c49c89;
       --text-color-dark: #a37460;
-      --text-color-darker: #4a2c20;
+      --text-color-darker: #9a644e;
       --selected-kana-bg: #c76d4a;
       --error-color: #d64933; 
       --success-color: #5b8a72; 
@@ -163,7 +171,6 @@
     body, html { 
       height: var(--vh); 
       width: 100%; 
-      background-color: var(--background-color); 
       color: var(--text-color); 
       font-family: sans-serif; 
       overflow: hidden; 
@@ -179,14 +186,40 @@
     
     #active-word { font-size: 4vh; text-align: center; }
     .inline-kanji { font-size: 0.75em; color: var(--text-color-light); font-weight: 300; margin-left: 0.2em; }
-    #active-word-romaji { font-size: 3.5vh; min-height: 3.5vh; display: flex; align-items: center; justify-content: center; }
+    
+    #active-word-romaji-container { display: grid; grid-template-columns: 1fr auto 1fr; width: 100%; align-items: center; min-height: 3.5vh; }
+    #active-word-romaji { grid-column: 2; font-size: 3.5vh; display: flex; align-items: center; justify-content: center; }
     .char-match { color: var(--success-color); }
     .char-error { color: var(--error-color); }
     .correction-hint { color: var(--text-color-light); font-size: 0.8em; margin-left: 12px; font-weight: 300; }
     
+    .speaker-icon {
+      grid-column: 3;
+      justify-self: start;
+      width: 3vh;
+      height: 3vh;
+      margin-left: 12px;
+      cursor: pointer;
+      color: var(--text-color-light);
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .speaker-icon:active { transform: scale(0.8); color: var(--text-color); }
+
     #active-word-definition-container { display: grid; grid-template-columns: 1fr auto 1fr; width: 100%; align-items: center; }
     #active-word-definition { grid-column: 2; font-size: 2.75vh; letter-spacing: .05em; text-align: center; }
-    .inline-star { grid-column: 3; justify-self: start; margin-left: 10px; font-size: 3vh; color: var(--text-color-light); cursor: pointer; display: flex; align-items: center; flex-shrink: 0; }
+    
+    .inline-star { 
+      grid-column: 3; 
+      justify-self: start; 
+      width: 2.5vh; 
+      height: 2.5vh;
+      margin-left: 12px; 
+      color: var(--text-color-light); 
+      cursor: pointer; 
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s ease;
+      flex-shrink: 0; 
+    }
+    .inline-star:active { transform: scale(0.8); }
     .inline-star.is-starred { color: var(--text-color-darker); }
 
     .action-container { grid-row: 3; height: 100%; width: 100%; cursor: pointer; }
@@ -221,8 +254,10 @@
     @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--text-color); } }
     .hidden-input { position: absolute; top: 50%; left: 50%; opacity: 0; pointer-events: none; z-index: -1; }
 
-    .word-counter { position: absolute; bottom: 30px; left: 30px; color: var(--text-color-light); font-size: 1.1em; z-index: 5; }
-    .list-floating-button { position: absolute; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; }
+    .bottom-left-container { position: absolute; bottom: 30px; left: 30px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; z-index: 5; }
+    .streak-display, .word-counter-display { color: var(--text-color-light); font-size: 1.1em; }
+    
+    .list-floating-button { position: absolute; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
     .settings-button-bottom { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; }
 
     .overlay-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s; transform: translateY(100%); z-index: 10; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; }
@@ -243,6 +278,9 @@
     .stats-value { color: var(--text-color-darker); font-weight: bold; }
 
     .achievements-list-container { display: flex; flex-direction: column; row-gap: 20px; width: 240px; }
+    .achievement-star { width: 2vh; height: 2vh; flex-shrink: 0; }
+
+    .ui-star-icon { width: 1.2em; height: 1.2em; vertical-align: middle; display: inline-block; margin-bottom: 0.1em; }
 
     .theme-circle {
       width: 4vh;
@@ -274,7 +312,7 @@
     .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 4vh 8vw 0 8vw; width: 100%; }
     .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 3.8vh; text-align: left; }
     .kana-menu-list-button { font-size: 3.1vh; cursor: pointer; color: var(--text-color-dark); width: 3.8vh; text-align: right; line-height: 1; }
-    .kana-menu-alphabet-button { font-size: 1.6vh; cursor: pointer; padding: 0.4em 1.4em; color: var(--text-color-dark); transform: translateX(2.3vh); }
+    .kana-menu-alphabet-button { font-size: 1.6vh; cursor: pointer; padding: 0.4em 1.4em; color: var(--text-color-dark); }
     
     .kana-character-menu-container { padding-top: 2vh; display: grid; grid-template-columns: repeat(6, 1fr); margin: auto; gap: 0.6vh; width: fit-content; touch-action: none; }
     .kana-menu-romaji-label { font-size: 1.4vh; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color-dark); height: 4vh; }
@@ -306,27 +344,34 @@
         </div>
         <div v-else @click.stop="openKanaMenuDirect">edit kana to begin</div>
 
-        <div id="active-word-romaji">
-          <template v-if="keyboardInputSetting && !showDetails">
-            {{ userInput }}<span class="cursor"></span>
-          </template>
-          
-          <template v-else-if="showDetails">
-             <template v-if="keyboardInputSetting">
-               <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
-               <span class="correction-hint" v-if="hasTypingErrors && activeRomajiTarget">({{ activeRomajiTarget }})</span>
-             </template>
-             <template v-else>
-               <span>{{ activeRomajiDisplay }}</span>
-             </template>
-          </template>
+        <div id="active-word-romaji-container">
+          <div id="active-word-romaji">
+            <template v-if="keyboardInputSetting && !showDetails">
+              {{ userInput }}<span class="cursor"></span>
+            </template>
+            
+            <template v-else-if="showDetails">
+               <template v-if="keyboardInputSetting">
+                 <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
+                 <span class="correction-hint" v-if="hasTypingErrors && activeRomajiTarget">({{ activeRomajiTarget }})</span>
+               </template>
+               <template v-else>
+                 <span>{{ activeRomajiDisplay }}</span>
+               </template>
+            </template>
+          </div>
+          <svg v-if="showDetails && speakerSetting" class="speaker-icon" @click.stop="speakWord" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
         </div>
 
         <div id="active-word-definition-container">
           <div id="active-word-definition">{{ showDetails ? activeDefinition : "" }}</div>
-          <div v-if="showDetails" class="inline-star" @click.stop="toggleStar" :class="{ 'is-starred': isStarred }">
-            {{ isStarred ? '★' : '☆' }}
-          </div>
+          <svg v-if="showDetails && starsSetting" class="inline-star" :class="{ 'is-starred': isStarred }" @click.stop="toggleStar" viewBox="0 0 24 24" :fill="isStarred ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
         </div>
         
         <!-- Vocal Input Button -->
@@ -351,15 +396,22 @@
 
     <div class="settings-button-bottom" @click="settingsOpen = true">settings</div>
 
-    <div v-if="keyboardInputSetting || selfGradeSetting || vocalInputSetting" class="word-counter">
-      streak: {{ streak }}
+    <div class="bottom-left-container">
+      <div class="word-counter-display" v-if="wordFilter !== 'all' && wordList.length > 0">
+        {{ activeWordIndex + 1 }} / {{ wordList.length }}
+      </div>
+      <div v-if="keyboardInputSetting || selfGradeSetting || vocalInputSetting" class="streak-display">
+        streak: {{ streak }}
+      </div>
     </div>
 
-    <div v-else class="word-counter" v-if="wordFilter !== 'all' && wordList.length > 0">
-      {{ activeWordIndex + 1 }} / {{ wordList.length }}
+    <div class="list-floating-button" :style="{ zIndex: listOpen ? 20 : 5 }" @click="listOpen ? resetList() : listOpen = true">
+      <span v-if="listOpen">reset list</span>
+      <svg v-else-if="wordFilter === 'starred'" class="ui-star-icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+      <span v-else>{{ currentListName }}</span>
     </div>
-
-    <div class="list-floating-button" :style="{ zIndex: listOpen ? 20 : 5 }" @click="listOpen ? resetList() : listOpen = true">{{ listOpen ? 'reset list' : currentListName }}</div>
 
     <!-- Main Settings Menu -->
     <div class="overlay-menu-container" :class="{ 'is-open': settingsOpen }">
@@ -376,6 +428,14 @@
         <div v-if="showKanjiSetting" class="settings-toggle-row" @click="kanjiOnlySetting = !kanjiOnlySetting">
           <span>kanji only</span>
           <div class="toggle-switch" :class="{ 'is-active': kanjiOnlySetting }"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="settings-toggle-row" @click="speakerSetting = !speakerSetting">
+          <span>speaker</span>
+          <div class="toggle-switch" :class="{ 'is-active': speakerSetting }"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="settings-toggle-row" @click="starsSetting = !starsSetting">
+          <span>stars</span>
+          <div class="toggle-switch" :class="{ 'is-active': starsSetting }"><div class="toggle-knob"></div></div>
         </div>
       </div>
       <div class="list-floating-button" @click="aboutOpen = true">about</div>
@@ -421,7 +481,12 @@
     <div class="overlay-menu-container" :class="{ 'is-open': listOpen }">
       <div class="back-arrow-fixed" @click="listOpen = false">←</div>
       <div class="overlay-menu-content">
-        <div class="menu-item" v-for="(name, id) in availableLists" :key="id" @click="selectList(id)">{{ name }}</div>
+        <div class="menu-item" v-for="(name, id) in availableLists" :key="id" v-show="id !== 'starred' || starsSetting" @click="selectList(id)">
+          <svg v-if="id === 'starred'" class="ui-star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span v-else>{{ name }}</span>
+        </div>
       </div>
     </div>
 
@@ -448,7 +513,9 @@
       <div class="overlay-menu-content" style="row-gap: 20px;">
         <div class="stats-row" v-for="ach in achievements" :key="ach.label" :style="{ color: ach.completed ? 'var(--text-color-darker)' : 'var(--text-color-light)' }">
           <span style="font-size: 1.8vh; text-transform: lowercase;">{{ ach.label }}</span>
-          <span>{{ ach.completed ? '★' : '☆' }}</span>
+          <svg class="achievement-star" :class="{ 'is-completed': ach.completed }" viewBox="0 0 24 24" :fill="ach.completed ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
         </div>
       </div>
     </div>
@@ -464,7 +531,7 @@
     <div class="kana-menu-container" :class="{ 'is-open': kanaOpen }">
       <div class="kana-menu-controls-container">
         <div class="kana-menu-exit-button" @click="closeKanaMenu">←</div>
-        <div class="kana-menu-alphabet-button" @click="toggleAlphabet">{{ alphabet }}</div>
+        <div class="kana-menu-alphabet-button" @click="toggleAlphabet">{{ alphabet }} ⇄</div>
         <div class="kana-menu-list-button" @click="toggleSelectAll">{{ isAllSelected ? '●' : '○' }}</div>
       </div>
       <div class="kana-character-menu-container"
@@ -490,31 +557,37 @@
 
     createApp({
       setup() {
+        // --- REFS & STATE ---
         const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
         const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), inputModeOpen = ref(false), themeOpen = ref(false), kanaOpen = ref(false), aboutOpen = ref(false);
         const keyboardInputSetting = ref(false), vocalInputSetting = ref(false), selfGradeSetting = ref(false), showKanjiSetting = ref(false), kanjiOnlySetting = ref(false);
+        const speakerSetting = ref(localStorage.getItem('speakerSetting') === null ? true : localStorage.getItem('speakerSetting') === 'true');
+        const starsSetting = ref(localStorage.getItem('starsSetting') === null ? true : localStorage.getItem('starsSetting') === 'true');
         const streak = ref(parseInt(localStorage.getItem('currentStreak') || '0')), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
         const selfGradeResult = ref(null), isRecording = ref(false);
         const alphabet = ref("hiragana"), currentCSV = ref([]);
         const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
+        const originalListLength = ref(0);
         const isKeyboardOpen = ref(false);
         const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
 
+        // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "げ", "ご", "z", "ザ", "ジ", "ズ", "ぜ", "ぞ", "d", "だ", "ぢ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
-        const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: '★' };
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
+        const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: 'starred' };
 
         const themes = [
           { id: 'light', color: '#ffffff', name: 'light' },
           { id: 'dark', color: '#1a1a1a', name: 'dark' },
-          { id: 'gyokuro', color: '#485c46', name: 'gyokuro' },
-          { id: 'matcha', color: '#7b9468', name: 'matcha' },
-          { id: 'yozora', color: '#4a5e78', name: 'yozora' },
+          { id: 'gyokuro', color: '#485c46', name: 'ぎょくろ' },
+          { id: 'matcha', color: '#7b9468', name: 'まっちゃ' },
+          { id: 'yoru', color: '#4a5e78', name: 'yozora' },
           { id: 'kissaten', color: '#8a6b58', name: 'kissaten' },
-          { id: 'koyo', color: '#c76d4a', name: 'kōyō' },
+          { id: 'mikan', color: '#c76d4a', name: 'kōyō' },
           { id: 'sakura', color: '#d18ca8', name: 'sakura' }
         ];
 
+        // --- SPEECH RECOGNITION ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         if (SpeechRecognition) {
@@ -524,6 +597,7 @@
           recognition.interimResults = false;
         }
 
+        // --- STATS LOGIC ---
         const localStats = JSON.parse(localStorage.getItem('appStats')) || {};
         const stats = reactive({
           totalWords: localStats.totalWords || 0, 
@@ -532,13 +606,15 @@
           mistakes: localStats.mistakes || 0, 
           wordFrequency: localStats.wordFrequency || {}, 
           timeLoggedSeconds: localStats.timeLoggedSeconds || 0,
-          completedLists: localStats.completedLists || []
+          completedLists: localStats.completedLists || [],
+          fullHiraganaWordsSeen: localStats.fullHiraganaWordsSeen || 0,
+          fullKatakanaWordsSeen: localStats.fullKatakanaWordsSeen || 0
         });
 
         const saveStats = () => localStorage.setItem('appStats', JSON.stringify(stats));
 
         const resetStats = () => { 
-          Object.assign(stats, { totalWords: 0, bestStreak: 0, correct: 0, mistakes: 0, wordFrequency: {}, timeLoggedSeconds: 0, completedLists: [] }); 
+          Object.assign(stats, { totalWords: 0, bestStreak: 0, correct: 0, mistakes: 0, wordFrequency: {}, timeLoggedSeconds: 0, completedLists: [], fullHiraganaWordsSeen: 0, fullKatakanaWordsSeen: 0 }); 
           saveStats(); 
           streak.value = 0;
         };
@@ -547,9 +623,20 @@
             if (!word) return;
             stats.totalWords++;
             stats.wordFrequency[word] = (stats.wordFrequency[word] || 0) + 1;
+            
+            const allHiragana = hChars.filter(c => c !== " " && wanakana.isKana(c)).every(c => selectedKana.has(c));
+            const allKatakana = kChars.filter(c => c !== " " && wanakana.isKana(c)).every(c => selectedKana.has(c));
+            
+            const hasHiragana = word.split('').some(c => wanakana.isHiragana(c));
+            const hasKatakana = word.split('').some(c => wanakana.isKatakana(c));
+
+            if (allHiragana && hasHiragana) stats.fullHiraganaWordsSeen++;
+            if (allKatakana && hasKatakana) stats.fullKatakanaWordsSeen++;
+            
             saveStats();
         };
 
+        // --- COMPUTED PROPERTIES ---
         const activeWordData = computed(() => wordList.value[activeWordIndex.value]);
         const activeWord = computed(() => activeWordData.value?.text || "...");
         const activeKanji = computed(() => activeWordData.value?.kanji || "");
@@ -597,12 +684,9 @@
         });
 
         const achievements = computed(() => {
-            const allHiragana = hChars.filter(c => c !== " " && wanakana.isKana(c)).every(c => selectedKana.has(c));
-            const allKatakana = kChars.filter(c => c !== " " && wanakana.isKana(c)).every(c => selectedKana.has(c));
-            
             return [
-                { label: 'learn all hiragana', completed: allHiragana },
-                { label: 'learn all katakana', completed: allKatakana },
+                { label: 'learn all hiragana', completed: stats.fullHiraganaWordsSeen >= 10 },
+                { label: 'learn all katakana', completed: stats.fullKatakanaWordsSeen >= 10 },
                 { label: '10 words', completed: stats.totalWords >= 10 },
                 { label: '100 words', completed: stats.totalWords >= 100 },
                 { label: '1,000 words', completed: stats.totalWords >= 1000 },
@@ -611,12 +695,23 @@
                 { label: 'streak of 25', completed: stats.bestStreak >= 25 },
                 { label: 'streak of 50', completed: stats.bestStreak >= 50 },
                 { label: 'streak of 100', completed: stats.bestStreak >= 100 },
+                { label: 'complete 1 list', completed: stats.completedLists.length >= 1 },
+                { label: 'complete 3 lists', completed: stats.completedLists.length >= 3 },
                 { label: 'study for 1 hour', completed: stats.timeLoggedSeconds >= 3600 }
             ];
         });
 
         const activeRomajiTarget = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "");
-        const activeRomajiDisplay = computed(() => activeWordData.value ? wanakana.tokenize(activeWordData.value.text).map(t => wanakana.toRomaji(t)).join('') : "");
+        const activeRomajiDisplay = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text) : "");
+
+        const speakWord = () => {
+          if (!('speechSynthesis' in window)) return;
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(activeWord.value);
+          utterance.lang = 'ja-JP';
+          utterance.rate = 1.0; 
+          window.speechSynthesis.speak(utterance);
+        };
 
         const inputMode = computed({
           get() {
@@ -635,6 +730,7 @@
         const currentTheme = ref('light');
         const currentThemeName = computed(() => themes.find(t => t.id === currentTheme.value)?.name);
 
+        // --- THEME ENGINE ---
         const applyTheme = (themeId) => {
           themes.forEach(t => {
             document.body.classList.remove(`theme-${t.id}`);
@@ -652,19 +748,24 @@
             'matcha': '#e2e8d3',
             'gyokuro': '#212922',
             'sakura': '#fce0ea',
-            'yozora': '#1e222b',
-            'koyo': '#f7dfd2',
-            'kissaten': '#4a3831'
+            'yoru': '#1e222b',
+            'kissaten': '#4a3831',
+            'mikan': '#f7dfd2'
           };
           
           var color = themeColors[themeId];
-          var isDark = ['dark', 'gyokuro', 'yozora', 'kissaten'].includes(themeId);
+          var isDark = ['dark', 'gyokuro', 'yoru', 'kissaten'].includes(themeId);
           
-          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-          document.getElementById('theme-color-meta')?.setAttribute('content', color);
           document.documentElement.style.backgroundColor = color;
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute('content', color);
+          }
         };
 
+        // --- CORE FUNCTIONS ---
         const toggleStar = () => {
           if (isStarred.value) starredWords.delete(activeWord.value);
           else starredWords.add(activeWord.value);
@@ -684,9 +785,11 @@
               return { text: kana, kanji: kanji, definition: def };
             }).filter(w => w.text !== ""); 
           }
+          
+          originalListLength.value = sourceList.length;
 
           wordList.value = sourceList.filter(w => {
-            if (kanjiOnlySetting.value && !w.kanji) return false;
+            if (kanjiOnlySetting.value && (!w.kanji || !/[\u4e00-\u9faf]/.test(w.kanji))) return false;
             for (let c of w.text) { 
               if (c === "ー" || c === " " || !wanakana.isKana(c)) continue;
               const norm = c.replace(/[ゃゅょぁぃぅぇぉャュョァィゥェォっッ]/, (m) => ({'ゃ':'や','ゅ':'ゆ','ょ':'よ','ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','ャ':'ヤ','ュ':'ユ','ョ':'ヨ','ァ':'ア','ィ':'イ','ゥ':'ウ','ェ':'エ','ォ':'オ', 'っ':'つ', 'ッ':'ツ'}[m] || m));
@@ -717,7 +820,9 @@
         const nextWord = () => {
           if (wordList.value.length === 0) return;
           if (activeWordIndex.value === wordList.value.length - 1 && wordFilter.value !== 'all') {
-            if (!stats.completedLists.includes(wordFilter.value)) { stats.completedLists.push(wordFilter.value); saveStats(); }
+            if (wordList.value.length === originalListLength.value) {
+              if (!stats.completedLists.includes(wordFilter.value)) { stats.completedLists.push(wordFilter.value); saveStats(); }
+            }
           }
           activeWordIndex.value = (activeWordIndex.value + 1) % wordList.value.length;
           trackWordAppearance(wordList.value[activeWordIndex.value].text);
@@ -881,28 +986,31 @@
           applyTheme(v);
         });
 
-        watch([selectedKana, keyboardInputSetting, vocalInputSetting, selfGradeSetting, showKanjiSetting, kanjiOnlySetting], () => { 
+        watch([selectedKana, keyboardInputSetting, vocalInputSetting, selfGradeSetting, showKanjiSetting, kanjiOnlySetting, speakerSetting, starsSetting], () => { 
           localStorage.setItem('selectedKana', JSON.stringify([...selectedKana])); 
           localStorage.setItem('keyboardInputSetting', keyboardInputSetting.value); 
           localStorage.setItem('vocalInputSetting', vocalInputSetting.value); 
           localStorage.setItem('selfGradeSetting', selfGradeSetting.value); 
           localStorage.setItem('showKanjiSetting', showKanjiSetting.value); 
           localStorage.setItem('kanjiOnlySetting', kanjiOnlySetting.value);
+          localStorage.setItem('speakerSetting', speakerSetting.value);
+          localStorage.setItem('starsSetting', starsSetting.value);
         });
         
         watch(streak, (v) => localStorage.setItem('currentStreak', v.toString()));
         watch(kanjiOnlySetting, () => updateWords());
         watch(showKanjiSetting, (v) => { if (!v) kanjiOnlySetting.value = false; });
+        watch(starsSetting, (v) => { if (!v && wordFilter.value === 'starred') selectList('all'); });
 
         return { 
           dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, statsOpen, achievementsOpen, inputModeOpen, themeOpen, kanaOpen, aboutOpen,
-          keyboardInputSetting, vocalInputSetting, selfGradeSetting, selfGradeResult, showKanjiSetting, kanjiOnlySetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
+          keyboardInputSetting, vocalInputSetting, selfGradeSetting, selfGradeResult, showKanjiSetting, kanjiOnlySetting, speakerSetting, starsSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
           activeWord, activeKanji, activeDefinition, isStarred, currentListName, feedbackChars, hasTypingErrors, stats, achievements, isRecording, inputMode,
           themes, currentTheme, currentThemeName,
           accuracyDisplay, activeKanaDisplay, topWordDisplay, timeLoggedDisplay, resetList, openStats, closeStats, openAchievements, closeAchievements, resetStats,
           handleEnter, handleSelfGrade, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, isAllSelected, toggleSelectAll, closeKanaMenu, isKeyboardOpen, startDrag, handleDrag, stopDrag, 
           transitionToKanaMenu, openKanaMenuDirect, isKana: wanakana.isKana, toggleAlphabet, toggleGroup,
-          activeRomajiTarget, activeRomajiDisplay, startRecording, stopRecording
+          activeRomajiTarget, activeRomajiDisplay, startRecording, stopRecording, speakWord
         };
       }
     }).mount('#app');
