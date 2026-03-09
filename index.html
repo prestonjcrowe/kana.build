@@ -566,7 +566,7 @@
         const streak = ref(parseInt(localStorage.getItem('currentStreak') || '0')), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
         const selfGradeResult = ref(null), isRecording = ref(false);
         const alphabet = ref("hiragana"), currentCSV = ref([]);
-        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
+        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)]);
         const originalListLength = ref(0);
         const isKeyboardOpen = ref(false);
         const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
@@ -580,12 +580,12 @@
         const themes = [
           { id: 'light', color: '#ffffff', name: 'light' },
           { id: 'dark', color: '#1a1a1a', name: 'dark' },
-          { id: 'gyokuro', color: '#485c46', name: 'gyokuro' },
-          { id: 'matcha', color: '#7b9468', name: 'matcha' },
-          { id: 'yoru', color: '#4a5e78', name: 'yoru' },
-          { id: 'kissaten', color: '#4a3831', name: 'kissaten' },
-          { id: 'mikan', color: '#c76d4a', name: 'mikan' },
-          { id: 'sakura', color: '#d18ca8', name: 'sakura' }
+          { id: 'gyokuro', color: '#485c46', name: 'ぎょくろ' },
+          { id: 'matcha', color: '#7b9468', name: 'まっちゃ' },
+          { id: 'yoru', color: '#4a5e78', name: 'おやすみ' },
+          { id: 'kissaten', color: '#4a3831', name: 'コーヒー' },
+          { id: 'mikan', color: '#c76d4a', name: 'ミカン' },
+          { id: 'sakura', color: '#d18ca8', name: 'さくら' }
         ];
 
         // --- SPEECH RECOGNITION ---
