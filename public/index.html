@@ -566,13 +566,14 @@
         const streak = ref(parseInt(localStorage.getItem('currentStreak') || '0')), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
         const selfGradeResult = ref(null), isRecording = ref(false);
         const alphabet = ref("hiragana"), currentCSV = ref([]);
-        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
+        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)]);
         const originalListLength = ref(0);
         const isKeyboardOpen = ref(false);
         const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
 
         // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
+        // FIX: The Katakana B and P row previously contained the Hiragana characters べ and ぺ. They have been swapped for Katakana ベ and ペ.
         const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: 'starred' };
 
@@ -582,7 +583,7 @@
           { id: 'gyokuro', color: '#485c46', name: 'gyokuro' },
           { id: 'matcha', color: '#7b9468', name: 'matcha' },
           { id: 'yoru', color: '#4a5e78', name: 'yoru' },
-          { id: 'kissaten', color: '#8a6b58', name: 'kissaten' },
+          { id: 'kissaten', color: '#4a3831', name: 'kissaten' },
           { id: 'mikan', color: '#c76d4a', name: 'mikan' },
           { id: 'sakura', color: '#d18ca8', name: 'sakura' }
         ];
@@ -595,6 +596,7 @@
           recognition.lang = 'ja-JP';
           recognition.continuous = false;
           recognition.interimResults = false;
+          recognition.maxAlternatives = 5; // Request up to 5 guesses instead of 1
         }
 
         // --- STATS LOGIC ---
@@ -642,19 +644,18 @@
         const activeKanji = computed(() => activeWordData.value?.kanji || "");
         const activeDefinition = computed(() => activeWordData.value?.definition || "");
 
-        // Helper to force Wanakana to use standard Hepburn for "fu" + small vowel digraphs
+        // FIX: The ultimate fix for "anfyea". We pass a custom mapping object to wanakana to override 
+        // its default parsing of specific digraphs before they can even become "fyea".
         const getRomaji = (text) => {
             if (!text) return "";
-            let romaji = wanakana.toRomaji(text);
-            if (text.includes('ファ') || text.includes('ふぁ')) romaji = romaji.replace(/fua|fya/g, 'fa');
-            if (text.includes('フィ') || text.includes('ふぃ')) romaji = romaji.replace(/fui|fyi/g, 'fi');
-            if (text.includes('フェ') || text.includes('ふぇ')) romaji = romaji.replace(/fue|fye/g, 'fe');
-            if (text.includes('フォ') || text.includes('ふぉ')) romaji = romaji.replace(/fuo|fyo/g, 'fo');
-            if (text.includes('ヴァ')) romaji = romaji.replace(/bua|vua/g, 'va');
-            if (text.includes('ヴィ')) romaji = romaji.replace(/bui|vui/g, 'vi');
-            if (text.includes('ヴェ')) romaji = romaji.replace(/bue|vue|vye/g, 've');
-            if (text.includes('ヴォ')) romaji = romaji.replace(/buo|vuo/g, 'vo');
-            return romaji;
+            return wanakana.toRomaji(text, {
+                customRomajiMapping: {
+                    'ファ': 'fa', 'フィ': 'fi', 'フェ': 'fe', 'フォ': 'fo',
+                    'ふぁ': 'fa', 'ふぃ': 'fi', 'ふぇ': 'fe', 'ふぉ': 'fo',
+                    'ヴァ': 'va', 'ヴィ': 'vi', 'ヴェ': 've', 'ヴォ': 'vo',
+                    'ヴ': 'v'
+                }
+            });
         };
 
         const feedbackChars = computed(() => {
@@ -907,16 +908,62 @@
 
         if (recognition) {
           recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            processVocalInput(transcript);
+            const results = event.results[0];
+            const transcripts = [];
+            // Collect all 5 alternate guesses the Speech API came up with
+            for (let i = 0; i < results.length; i++) {
+              transcripts.push(results[i].transcript);
+            }
+            processVocalInput(transcripts);
           };
           recognition.onerror = () => { isRecording.value = false; };
         }
 
-        const processVocalInput = (transcript) => {
-          const normalizedInput = wanakana.toHiragana(wanakana.toKana(transcript.trim()));
+        const processVocalInput = (transcripts) => {
           const normalizedTarget = wanakana.toHiragana(activeWord.value);
-          const isCorrect = normalizedInput === normalizedTarget;
+          const currentKanji = activeKanji.value;
+
+          let isCorrect = false;
+
+          // Check if ANY of the AI's guesses match our word
+          for (let transcript of transcripts) {
+            const cleanTranscript = transcript.trim().replace(/[、。！？\s.,!?]/g, '');
+            const normalizedInput = wanakana.toHiragana(wanakana.toKana(cleanTranscript));
+            
+            // Strip out long vowels and small tsu pauses that the API accidentally tacks on
+            const strippedInput = normalizedInput.replace(/[ーっッ]/g, '');
+            const strippedTarget = normalizedTarget.replace(/[ーっッ]/g, '');
+
+            // 1. Exact Match (Kana)
+            if (normalizedInput === normalizedTarget) {
+              isCorrect = true; break;
+            } 
+            // 2. Exact Match (Kanji) - Speech API heavily favors Kanji for short words
+            else if (currentKanji && cleanTranscript === currentKanji) {
+              isCorrect = true; break;
+            } 
+            // 3. Ignore long vowels and small tsu (e.g. ワー vs ワ, あっ vs あ)
+            else if (strippedInput === strippedTarget && strippedTarget.length > 0) {
+              isCorrect = true; break;
+            } 
+            // 4. Substring forgiveness for 1-2 character words (catches trailing noises)
+            else if (normalizedTarget.length <= 2 && normalizedInput.includes(normalizedTarget)) {
+              isCorrect = true; break;
+            } 
+            else if (currentKanji && currentKanji.length <= 2 && cleanTranscript.includes(currentKanji)) {
+              isCorrect = true; break;
+            } 
+            // 5. Romaji Fallback (in case the API outputs English like "ki" instead of "き")
+            else if (cleanTranscript.toLowerCase() === activeRomajiTarget.value) {
+              isCorrect = true; break;
+            }
+            // 6. Common isolated particle pronunciation quirks
+            else if (normalizedTarget.length === 1) {
+              if (normalizedTarget === 'へ' && normalizedInput.includes('え')) { isCorrect = true; break; } // he -> e
+              if (normalizedTarget === 'を' && normalizedInput.includes('お')) { isCorrect = true; break; } // wo -> o
+              if (normalizedTarget === 'は' && normalizedInput.includes('わ')) { isCorrect = true; break; } // ha -> wa
+            }
+          }
 
           if (isCorrect) {
             streak.value++; stats.correct++;
