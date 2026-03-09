@@ -566,7 +566,7 @@
         const streak = ref(parseInt(localStorage.getItem('currentStreak') || '0')), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
         const selfGradeResult = ref(null), isRecording = ref(false);
         const alphabet = ref("hiragana"), currentCSV = ref([]);
-        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[0]);
+        const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)]);
         const originalListLength = ref(0);
         const isKeyboardOpen = ref(false);
         const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
