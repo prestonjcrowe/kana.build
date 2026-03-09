@@ -579,11 +579,11 @@
         const themes = [
           { id: 'light', color: '#ffffff', name: 'light' },
           { id: 'dark', color: '#1a1a1a', name: 'dark' },
-          { id: 'gyokuro', color: '#485c46', name: 'ぎょくろ' },
-          { id: 'matcha', color: '#7b9468', name: 'まっちゃ' },
-          { id: 'yoru', color: '#4a5e78', name: 'yozora' },
+          { id: 'gyokuro', color: '#485c46', name: 'gyokuro' },
+          { id: 'matcha', color: '#7b9468', name: 'matcha' },
+          { id: 'yoru', color: '#4a5e78', name: 'yoru' },
           { id: 'kissaten', color: '#8a6b58', name: 'kissaten' },
-          { id: 'mikan', color: '#c76d4a', name: 'kōyō' },
+          { id: 'mikan', color: '#c76d4a', name: 'mikan' },
           { id: 'sakura', color: '#d18ca8', name: 'sakura' }
         ];
 
@@ -642,10 +642,25 @@
         const activeKanji = computed(() => activeWordData.value?.kanji || "");
         const activeDefinition = computed(() => activeWordData.value?.definition || "");
 
+        // Helper to force Wanakana to use standard Hepburn for "fu" + small vowel digraphs
+        const getRomaji = (text) => {
+            if (!text) return "";
+            let romaji = wanakana.toRomaji(text);
+            if (text.includes('ファ') || text.includes('ふぁ')) romaji = romaji.replace(/fua|fya/g, 'fa');
+            if (text.includes('フィ') || text.includes('ふぃ')) romaji = romaji.replace(/fui|fyi/g, 'fi');
+            if (text.includes('フェ') || text.includes('ふぇ')) romaji = romaji.replace(/fue|fye/g, 'fe');
+            if (text.includes('フォ') || text.includes('ふぉ')) romaji = romaji.replace(/fuo|fyo/g, 'fo');
+            if (text.includes('ヴァ')) romaji = romaji.replace(/bua|vua/g, 'va');
+            if (text.includes('ヴィ')) romaji = romaji.replace(/bui|vui/g, 'vi');
+            if (text.includes('ヴェ')) romaji = romaji.replace(/bue|vue|vye/g, 've');
+            if (text.includes('ヴォ')) romaji = romaji.replace(/buo|vuo/g, 'vo');
+            return romaji;
+        };
+
         const feedbackChars = computed(() => {
           if (!keyboardInputSetting.value) return [];
           const input = userInput.value.toLowerCase();
-          const target = activeWordData.value ? wanakana.toRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "";
+          const target = activeWordData.value ? getRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "";
           return input.split('').map((char, i) => ({ val: char, match: char === target[i] }));
         });
 
@@ -701,8 +716,8 @@
             ];
         });
 
-        const activeRomajiTarget = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "");
-        const activeRomajiDisplay = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text) : "");
+        const activeRomajiTarget = computed(() => activeWordData.value ? getRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "");
+        const activeRomajiDisplay = computed(() => activeWordData.value ? getRomaji(activeWordData.value.text) : "");
 
         const speakWord = () => {
           if (!('speechSynthesis' in window)) return;
