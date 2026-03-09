@@ -1,0 +1,181 @@
+Kanji,Hiragana,English,Tags
+私,わたし,I (female/casual; unisex/formal),Pronoun
+僕,ぼく,I (male/casual),Pronoun
+,あなた,you (general),Pronoun
+君,きみ,you (casual),Pronoun
+彼,かれ,he,Pronoun
+彼女,かのじょ,she,Pronoun
+彼ら,かれら,they,Pronoun
+町 / 街,まち,town / city,Places Around Town
+病院,びょういん,hospital,Places Around Town
+学校,がっこう,school,Places Around Town
+,スーパーマーケット,supermarket,Places Around Town
+店,みせ,store,Places Around Town
+郵便局,ゆうびんきょく,post office,Places Around Town
+(市/区) 役所,(し/く)やくしょ,city/town hall,Places Around Town
+駅,えき,station,Places Around Town
+,ペン,pen,School / Office Essentials
+鉛筆,えんぴつ,pencil,School / Office Essentials
+消しゴム,けしゴム,eraser,School / Office Essentials
+,ノート,notebook,School / Office Essentials
+教科書,きょうかしょ,textbook,School / Office Essentials
+,コンピューター,computer,School / Office Essentials
+,インターネット,internet,School / Office Essentials
+,ワイファイ,wi-fi,School / Office Essentials
+頭,あたま,head,Body Parts
+顔,かお,face,Body Parts
+目,め,eye,Body Parts
+鼻,はな,nose,Body Parts
+口,くち,mouth,Body Parts
+耳,みみ,ear,Body Parts
+首,くび,neck,Body Parts
+体,からだ,body,Body Parts
+肩,かた,shoulder,Body Parts
+背中,せなか,back,Body Parts
+胸,むね,chest / breast,Body Parts
+腹 / お腹,はら / おなか,belly / abdomen,Body Parts
+腕,うで,arm,Body Parts
+手,て,hand,Body Parts
+指,ゆび,finger,Body Parts
+足,あし,leg,Body Parts
+肉,にく,meat,Food
+野菜,やさい,vegetable,Food
+果物,くだもの,fruit,Food
+魚,さかな,fish,Food
+卵,たまご,egg,Food
+牛乳,ぎゅうにゅう,milk,Food
+米,こめ,rice,Food
+ご飯,ごはん,cooked rice / meal,Food
+麺,めん,noodle,Food
+起きる,おきる,wake up / get up,Daily Activities
+寝る,ねる,sleep,Daily Activities
+見る,みる,see / watch / look,Daily Activities
+聞く,きく,hear / listen,Daily Activities
+言う,いう,say,Daily Activities
+食べる,たべる,eat,Daily Activities
+飲む,のむ,drink,Daily Activities
+行く,いく,go,Daily Activities
+来る,くる,come,Daily Activities
+歩く,あるく,walk,Daily Activities
+走る,はしる,run,Daily Activities
+入る,はいる,enter,Daily Activities
+出る,でる,go out / come out,Daily Activities
+押す,おす,push,Daily Activities
+引く,ひく,pull,Daily Activities
+変える,かえる,change,Daily Activities
+読む,よむ,read,Daily Activities
+書く,かく,write,Daily Activities
+,する,do,Daily Activities
+仕事する,しごとする,work,Daily Activities
+勉強する,べんきょうする,study,Daily Activities
+運転する,うんてんする,drive,Daily Activities
+料理する,りょうりする,cook,Daily Activities
+立つ,たつ,stand,Daily Activities
+座る,すわる,sit,Daily Activities
+乗る,のる,get on,Daily Activities
+降りる,おりる,get off,Daily Activities
+大きい,おおきい,big / large,Describing Objects
+小さい,ちいさい,small / little,Describing Objects
+長い,ながい,long,Describing Objects
+短い,みじかい,short,Describing Objects
+丸い,まるい,round,Describing Objects
+四角い,しかくい,square,Describing Objects
+固い,かたい,hard / stiff,Describing Objects
+柔らかい,やわらかい,soft / flexible,Describing Objects
+熱い,あつい,hot*,Describing Objects
+冷たい,つめたい,cold (to the touch)**,Describing Objects
+高い,たかい,tall / high,Describing People and Emotions
+低い,ひくい,short / low,Describing People and Emotions
+痩せた,やせた,thin / skinny / slim,Describing People and Emotions
+太った,ふとった,fat,Describing People and Emotions
+可愛い,かわいい,cute / pretty,Describing People and Emotions
+美しい,うつくしい,beautiful,Describing People and Emotions
+格好良い,かっこいい,handsome / cool,Describing People and Emotions
+優しい,やさしい,kind / gentle,Describing People and Emotions
+難しい,むずかしい,difficult,Describing People and Emotions
+怖い,こわい,scary,Describing People and Emotions
+面白い,おもしろい,fun / interesting,Describing People and Emotions
+嬉しい,うれしい,happy,Describing People and Emotions
+悲しい,かなしい,sad,Describing People and Emotions
+楽しい,たのしい,fun / enjoyable,Describing People and Emotions
+眠い,ねむい,sleepy,Describing People and Emotions
+晴れの,はれの,sunny,Describing Weather
+雨の,あめの,rainy,Describing Weather
+曇りの,くもりの,cloudy,Describing Weather
+風の(ある/強い),かぜの(ある/つよい),windy,Describing Weather
+雪の,ゆきの,snowy,Describing Weather
+,そして,and / then,Conjunctions
+,だから,because / therefore / thus,Conjunctions
+,だが,but,Conjunctions
+,ところが,however / on the contrary,Conjunctions
+,また,also,Conjunctions
+又は,または,or,Conjunctions
+,ところで,by the way,Conjunctions
+,さらに,moreover / furthermore,Conjunctions
+例えば,たとえば,for example,Conjunctions
+,これ,this (close to the speaker),Demonstrative Pronouns
+,それ,it / that (close to the listener),Demonstrative Pronouns
+,あれ,that (far from both the speaker and the listener),Demonstrative Pronouns
+,これら,these (close to the speaker),Demonstrative Pronouns
+,それら,they / those (close to the listener),Demonstrative Pronouns
+,あれら,those (far from both the speaker and the listener),Demonstrative Pronouns
+何,なに,what,Question Words
+誰,だれ,who,Question Words
+,どこ,where,Question Words
+,どの,which,Question Words
+,なぜ / どうして,why,Question Words
+,いつ,when,Question Words
+,いくら,how much,Question Words
+,いくつ,how many,Question Words
+,どうやって,how,Question Words
+,いち,one,Numbers
+二,に,two,Numbers
+三,さん,three,Numbers
+四,し / よん,four,Numbers
+五,ご,five,Numbers
+六,ろく,six,Numbers
+七,しち / なな,seven,Numbers
+八,はち,eight,Numbers
+九,く / きゅう,nine,Numbers
+十,じゅう,ten,Numbers
+時間,じかん,time,Time and Calendar
+分,ふん / ぷん,minute,Time and Calendar
+時,じ,o'clock,Time and Calendar
+日,にち / ひ / び,day,Time and Calendar
+月,つき / げつ / がつ,month,Time and Calendar
+年,ねん,year,Time and Calendar
+午前,ごぜん,morning time (until noon),Time and Calendar
+午後,ごご,afternoon,Time and Calendar
+朝,あさ,morning,Time and Calendar
+昼,ひる,noon / noontime / daytime,Time and Calendar
+夕方,ゆうがた,early evening,Time and Calendar
+夜,よる,evening / night,Time and Calendar
+月曜日,げつようび,Monday,Time and Calendar
+火曜日,かようび,Tuesday,Time and Calendar
+水曜日,すいようび,Wednesday,Time and Calendar
+木曜日,もくようび,Thursday,Time and Calendar
+金曜日,きんようび,Friday,Time and Calendar
+土曜日,どようび,Saturday,Time and Calendar
+日曜日,にちようび,Sunday,Time and Calendar
+親,おや,parent,Family and People
+両親,りょうしん,parents,Family and People
+父 / お父さん,ちち / おとうさん,father / dad,Family and People
+母 / お母さん,はは / おかあさん,mother / mom,Family and People
+兄,あに,older brother,Family and People
+姉,あね,older sister,Family and People
+弟,おとうと,younger brother,Family and People
+妹,いもうと,younger sister,Family and People
+祖父 / お爺ちゃん,そふ / おじいちゃん,grandfather / grandpa,Family and People
+祖母 / お婆ちゃん,そぼ / おばあちゃん,grandmother / grandma,Family and People
+伯父 (叔父),おじ,uncle,Family and People
+伯母 (叔母),おば,aunt,Family and People
+従兄弟,いとこ,cousin,Family and People
+孫,まご,grandchild,Family and People
+,さん,Mr. / Mrs. / Ms.(put after a name to refer to a person politely),Family and People
+様,さま,Mr. / Mrs. / Ms.(put after a name to refer to a person respectfully),Family and People
+仕事,しごと,work,Jobs and Occupations
+会社員,かいしゃいん,employee of a company,Jobs and Occupations
+医者,いしゃ,doctor,Jobs and Occupations
+弁護士,べんごし,lawyer,Jobs and Occupations
+先生 / 教師,せんせい / きょうし,teacher,Jobs and Occupations
+生徒 / 学生,せいと / がくせい,student,Jobs and Occupations
