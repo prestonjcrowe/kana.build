@@ -12,7 +12,7 @@
   <!-- 1. Single static theme-color meta tag -->
   <meta name="theme-color" content="#ffffff">
   
-  <!-- 2. Cleaned-up Launch Script (No duplicates) -->
+  <!-- 2. Cleaned-up Launch Script -->
   <script>
     (function() {
       try {
@@ -56,7 +56,7 @@
       --text-color: #626262;
       --text-color-light: #b5afa7;
       --text-color-dark: #c3c3c3;
-      --text-color-darker: #414649;
+      --text-color-darker: #5f6061;
       --selected-kana-bg: #676767;
       --background-color: white;
       --error-color: #ff6b6b;
@@ -80,7 +80,7 @@
       --text-color: #dfdfdf;
       --text-color-light: #b5b5b5;
       --text-color-dark: #d5d5d5;
-      --text-color-darker: #ffffff;
+      --text-color-darker: #dddddd;
       --selected-kana-bg: #4c4c4c;
       --background-color: #1a1a1a;
       --error-color: #ff5252;
@@ -94,7 +94,7 @@
       --text-color: #5c7050; 
       --text-color-light: #9cb38d; 
       --text-color-dark: #86997a; 
-      --text-color-darker: #2b3625; 
+      --text-color-darker: #5b744d; 
       --selected-kana-bg: #7b9468; 
       --error-color: #e07a5f; 
       --success-color: #4a7c59; 
@@ -107,7 +107,7 @@
       --text-color: #a3b89e; 
       --text-color-light: #6c8067; 
       --text-color-dark: #c5d9c0; 
-      --text-color-darker: #e2eedf; 
+      --text-color-darker: #c3d3bf; 
       --selected-kana-bg: #485c46; 
       --error-color: #e07a5f; 
       --success-color: #6c9a79; 
@@ -120,7 +120,7 @@
       --text-color: #a87b8d;
       --text-color-light: #d4aebf;
       --text-color-dark: #b88a9e;
-      --text-color-darker: #9d6781;
+      --text-color-darker: #c688a6;
       --selected-kana-bg: #d18ca8;
       --error-color: #e56b6f; 
       --success-color: #7fb069; 
@@ -133,7 +133,7 @@
       --text-color: #a9b4c2;
       --text-color-light: #69788a;
       --text-color-dark: #8a99a8;
-      --text-color-darker: #e2e8f0;
+      --text-color-darker: #c3cbd6;
       --selected-kana-bg: #4a5e78;
       --error-color: #ff6b6b;
       --success-color: #48cae4; 
@@ -146,7 +146,7 @@
       --text-color: #e8d5c4;
       --text-color-light: #b59a8a;
       --text-color-dark: #f5e6d3;
-      --text-color-darker: #ffffff;
+      --text-color-darker: #d9cdca;
       --selected-kana-bg: #8a6b58;
       --error-color: #e56b6f; 
       --success-color: #6c9a79; 
@@ -159,7 +159,7 @@
       --text-color: #825746;
       --text-color-light: #c49c89;
       --text-color-dark: #a37460;
-      --text-color-darker: #4a2c20;
+      --text-color-darker: #9a644e;
       --selected-kana-bg: #c76d4a;
       --error-color: #d64933; 
       --success-color: #5b8a72; 
@@ -573,14 +573,14 @@
 
         // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "べ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
+        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
         const availableLists = { all: 'all words', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', animals: 'animals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: 'starred' };
 
         const themes = [
           { id: 'light', color: '#ffffff', name: 'light' },
           { id: 'dark', color: '#1a1a1a', name: 'dark' },
-          { id: 'gyokuro', color: '#485c46', name: 'gyokuro' },
-          { id: 'matcha', color: '#7b9468', name: 'matcha' },
+          { id: 'gyokuro', color: '#485c46', name: 'ぎょくろ' },
+          { id: 'matcha', color: '#7b9468', name: 'まっちゃ' },
           { id: 'yoru', color: '#4a5e78', name: 'yozora' },
           { id: 'kissaten', color: '#8a6b58', name: 'kissaten' },
           { id: 'mikan', color: '#c76d4a', name: 'kōyō' },
@@ -701,7 +701,6 @@
             ];
         });
 
-        // BUG FIX: By passing the whole string instead of tokenizing, Wanakana correctly recognizes "フェ" as "fe" instead of breaking it into "fyea".
         const activeRomajiTarget = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "");
         const activeRomajiDisplay = computed(() => activeWordData.value ? wanakana.toRomaji(activeWordData.value.text) : "");
 
@@ -760,7 +759,6 @@
           document.documentElement.style.backgroundColor = color;
           document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 
-          // BUG FIX: Modify the existing tag instead of creating duplicates
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) {
             meta.setAttribute('content', color);
