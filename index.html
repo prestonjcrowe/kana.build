@@ -1072,6 +1072,26 @@
           } catch (e) {}
         });
 
+        watch(userInput, (newVal) => {
+          if (!keyboardInputSetting.value || showDetails.value) return;
+          
+          // Filter: only allow lowercase a-z, ignoring spaces and non-romaji
+          const filtered = newVal.toLowerCase().replace(/[^a-z]/g, '');
+          if (filtered !== newVal) {
+            userInput.value = filtered;
+            return;
+          }
+
+          if (filtered === activeRomajiTarget.value && filtered.length > 0) {
+            streak.value++; stats.correct++;
+            if (streak.value > stats.bestStreak) stats.bestStreak = streak.value;
+            correctSound.currentTime = 0; correctSound.play().catch(e => {});
+            saveStats();
+            showDetails.value = true;
+            setTimeout(() => { if (showDetails.value && activeRomajiTarget.value === filtered) nextWord(); }, 600);
+          }
+        });
+
         watch(currentTheme, (v) => { 
           localStorage.setItem('currentTheme', v); 
           applyTheme(v);
