@@ -589,12 +589,12 @@
     createApp({
       setup() {
         // --- REFS & STATE ---
-        const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
+        const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(parseInt(localStorage.getItem('activeWordIndex') || '0')), showDetails = ref(false), userInput = ref("");
         const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), inputModeOpen = ref(false), themeOpen = ref(false), kanaOpen = ref(false), aboutOpen = ref(false);
         const keyboardInputSetting = ref(false), vocalInputSetting = ref(false), selfGradeSetting = ref(false), showKanjiSetting = ref(false), kanjiOnlySetting = ref(false);
         const speakerSetting = ref(localStorage.getItem('speakerSetting') === null ? true : localStorage.getItem('speakerSetting') === 'true');
         const starsSetting = ref(localStorage.getItem('starsSetting') === null ? true : localStorage.getItem('starsSetting') === 'true');
-        const streak = ref(parseInt(localStorage.getItem('currentStreak') || '0')), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref("all");
+        const streak = ref(parseInt(localStorage.getItem('currentStreak') || '0')), selectedKana = reactive(new Set()), starredWords = reactive(new Set()), wordFilter = ref(localStorage.getItem('wordFilter') || "all");
         const selfGradeResult = ref(null), isRecording = ref(false);
         const alphabet = ref("hiragana"), currentCSV = ref([]);
         const keyboardTrigger = ref(null), subtitle = ref(KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)]);
@@ -840,13 +840,19 @@
               if (!selectedKana.has(norm)) return false;
             }
             return true;
-          }).sort(() => Math.random() - 0.5);
-          activeWordIndex.value = 0; showDetails.value = false; selfGradeResult.value = null;
-          if (wordList.value.length > 0 && !loading.value) trackWordAppearance(wordList.value[0].text);
+          });
+          
+          if (activeWordIndex.value >= wordList.value.length) {
+            activeWordIndex.value = 0;
+          }
+          
+          showDetails.value = false; selfGradeResult.value = null;
+          if (wordList.value.length > 0 && !loading.value) trackWordAppearance(wordList.value[activeWordIndex.value].text);
         };
 
-        const selectList = async (id) => {
+        const selectList = async (id, resetIndex = true) => {
           wordFilter.value = id;
+          if (resetIndex !== false) activeWordIndex.value = 0;
           if (id !== 'all' && id !== 'starred') {
             const res = await fetch(`${id}.csv`); const text = await res.text();
             const raw = Papa.parse(text, { skipEmptyLines: true }).data;
@@ -1067,8 +1073,23 @@
             const res = await fetch('jmdict-eng-common.json'); 
             const data = await res.json(); 
             dictionary.value = data.words; 
+            
+            const savedFilter = localStorage.getItem('wordFilter') || 'all';
+            const savedIndex = parseInt(localStorage.getItem('activeWordIndex') || '0');
+            
+            if (savedFilter !== 'all' && savedFilter !== 'starred') {
+              await selectList(savedFilter, false);
+            } else {
+              wordFilter.value = savedFilter;
+              updateWords();
+            }
+            
+            if (wordList.value.length > 0) {
+              activeWordIndex.value = Math.min(savedIndex, wordList.value.length - 1);
+            }
+            
             loading.value = false;
-            updateWords(); 
+            if (wordList.value.length > 0) trackWordAppearance(wordList.value[activeWordIndex.value].text);
           } catch (e) {}
         });
 
@@ -1088,6 +1109,8 @@
           localStorage.setItem('starsSetting', starsSetting.value);
         });
         
+        watch(activeWordIndex, (v) => localStorage.setItem('activeWordIndex', v.toString()));
+        watch(wordFilter, (v) => localStorage.setItem('wordFilter', v));
         watch(streak, (v) => localStorage.setItem('currentStreak', v.toString()));
         watch(kanjiOnlySetting, () => updateWords());
         watch(showKanjiSetting, (v) => { if (!v) kanjiOnlySetting.value = false; });
