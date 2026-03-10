@@ -347,7 +347,7 @@
 
       <div class="active-word-container" @click="handleScreenTap">
         <div v-if="loading">loading dictionary...</div>
-        <div v-else-if="wordList.length > 0" id="active-word">
+        <div v-else-if="wordList.length > 0" id="active-word" ref="activeWordRef">
           <template v-if="kanjiOnlySetting">
             {{ activeKanji }}<span class="inline-kanji" v-if="showDetails">[{{ activeWord }}]</span>
           </template>
@@ -601,6 +601,15 @@
         const originalListLength = ref(0);
         const isKeyboardOpen = ref(false);
         const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
+        const activeWordRef = ref(null), activeWordWidth = ref(0);
+
+        const updateActiveWordWidth = () => {
+          nextTick(() => {
+            if (activeWordRef.value) {
+              activeWordWidth.value = activeWordRef.value.offsetWidth;
+            }
+          });
+        };
 
         // --- CONSTANTS ---
         const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
@@ -864,12 +873,15 @@
 
         const nextWord = () => {
           if (wordList.value.length === 0) return;
-          if (activeWordIndex.value === wordList.value.length - 1 && wordFilter.value !== 'all') {
-            if (wordList.value.length === originalListLength.value) {
+          if (activeWordIndex.value === wordList.value.length - 1) {
+            if (wordFilter.value !== 'all' && wordList.value.length === originalListLength.value) {
               if (!stats.completedLists.includes(wordFilter.value)) { stats.completedLists.push(wordFilter.value); saveStats(); }
             }
+            activeWordIndex.value = 0;
+            wordList.value.sort(() => Math.random() - 0.5);
+          } else {
+            activeWordIndex.value++;
           }
-          activeWordIndex.value = (activeWordIndex.value + 1) % wordList.value.length;
           trackWordAppearance(wordList.value[activeWordIndex.value].text);
           showDetails.value = false; userInput.value = ""; selfGradeResult.value = null;
           subtitle.value = KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)];
@@ -1113,6 +1125,8 @@
         watch(showKanjiSetting, (v) => { if (!v) kanjiOnlySetting.value = false; });
         watch(starsSetting, (v) => { if (!v && wordFilter.value === 'starred') selectList('all'); });
 
+        watch([activeWord, showDetails, kanjiOnlySetting, showKanjiSetting], updateActiveWordWidth);
+
         return { 
           dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, statsOpen, achievementsOpen, inputModeOpen, themeOpen, kanaOpen, aboutOpen,
           keyboardInputSetting, vocalInputSetting, selfGradeSetting, selfGradeResult, showKanjiSetting, kanjiOnlySetting, speakerSetting, starsSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
@@ -1121,7 +1135,8 @@
           accuracyDisplay, activeKanaDisplay, topWordDisplay, timeLoggedDisplay, resetList, openStats, closeStats, openAchievements, closeAchievements, resetStats,
           handleEnter, handleSelfGrade, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, isAllSelected, toggleSelectAll, closeKanaMenu, isKeyboardOpen, startDrag, handleDrag, stopDrag, 
           transitionToKanaMenu, openKanaMenuDirect, isKana: wanakana.isKana, toggleAlphabet, toggleGroup,
-          activeRomajiTarget, activeRomajiDisplay, startRecording, stopRecording, speakWord
+          activeRomajiTarget, activeRomajiDisplay, startRecording, stopRecording, speakWord,
+          activeWordRef, activeWordWidth
         };
       }
     }).mount('#app');
