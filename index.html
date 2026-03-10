@@ -554,8 +554,16 @@
     <!-- About Overlay -->
     <div class="overlay-menu-container" :class="{ 'is-open': aboutOpen }" style="z-index: 15;">
       <div class="back-arrow-fixed" @click="aboutOpen = false">←</div>
-      <div class="overlay-menu-content">
-        <div style="font-size: 1.4em; letter-spacing: .1em; color: var(--text-color);">hi preston :3</div>
+      <div class="overlay-menu-content" style="padding: 0 10vw; text-align: center; row-gap: 2.5vh;">
+        <div style="font-size: 1.6em; letter-spacing: .2em; margin-bottom: 1vh;">about</div>
+        <div style="font-size: 1.1em; line-height: 1.6; color: var(--text-color); font-weight: 300; max-width: 400px; display: flex; flex-direction: column; gap: 2vh;">
+          <div>learn to read japanese while you pretend to do your job with kana.build</div>
+          <div>you can use this tool as a beginner to learn kana and work your way up to grinding kanji like a real otaku</div>
+          <div>select a wordlist that fits your level and some kana characters you'd like to focus on to get started</div>
+        </div>
+        <div style="font-size: 1.1em; font-weight: 300; margin-top: 1vh;">
+          check us out on <a href="https://github.com/prestonjcrowe/kana.build" target="_blank" style="color: var(--text-color-light); text-decoration: none; border-bottom: 1px solid var(--text-color-light);">github</a>
+        </div>
       </div>
     </div>
 

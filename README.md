@@ -1,6 +1,6 @@
 # kana.build
 
-Practice your Japanese with [kana.build](https://www.kana.build/)!
+[kana.build](https://www.kana.build/)
 
 ```
 ⠀⠀⠀⢸⣦⡀⠀⠀⠀⠀⢀⡄
@@ -25,9 +25,17 @@ Practice your Japanese with [kana.build](https://www.kana.build/)!
 ⠀⠠⠊⠀⠀⠀⠀⠙⠂⣴⠒⠒⣲⢔⠉⠉⣹⣞⣉⣈⠿⢦⣀⣀⣀⣠⡴⠟
 ```
 
+## about
+
+learn to read japanese while you pretend to do your job with kana.build. you 
+can use this tool as a beginner to learn kana and work your way up to grinding 
+kanji like a real otaku. select a wordlist that fits your level and some kana 
+characters you'd like to focus on to get started
+
+
 ### TODOs
 - [x] click and drag for character selection (kind of)
-- [ ] local storage for selected kana etc.
+- [x] local storage for selected kana etc.
 
 ## Low Priority Ideas
 - maybe display multiple definitions?
