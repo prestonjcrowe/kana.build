@@ -102,13 +102,13 @@
       --toggle-bg-on: #7b9468;
     }
 
-    /* Steam Green Theme (Consolidated and Updated) */
+    /* Steam Green Theme */
     html.theme-steam, body.theme-steam, .theme-steam {
       --background-color: #4c5844; 
       --text-color: #b8b37b; 
       --text-color-light: #aab3a2; 
       --text-color-dark: #b8b37b; 
-      --text-color-darker: #3e4637; 
+      --text-color-darker: #282e23; 
       --selected-kana-bg: #3e4637; 
       --error-color: #e07a5f; 
       --success-color: #6c9a79; 
@@ -360,7 +360,7 @@
             </template>
           </div>
 
-          <div id="active-word-romaji-container">
+          <div id="active-word-romaji-container" v-if="wordFilter !== 'kanji_radicals'">
             <div id="active-word-romaji">
               <template v-if="keyboardInputSetting && !showDetails">
                 {{ userInput }}<span class="cursor"></span>
@@ -540,6 +540,7 @@
         <div class="stats-row"><span class="stats-label">accuracy</span><span class="stats-value">{{ accuracyDisplay }}</span></div>
         <div class="stats-row"><span class="stats-label">active kana</span><span class="stats-value">{{ activeKanaDisplay }}</span></div>
         <div class="stats-row"><span class="stats-label">top word</span><span class="stats-value">{{ topWordDisplay }}</span></div>
+        <div class="stats-row"><span class="stats-label">days active</span><span class="stats-value">{{ stats.daysActive }}</span></div>
         <div class="stats-row"><span class="stats-label">time logged</span><span class="stats-value">{{ timeLoggedDisplay }}</span></div>
         
         <div class="menu-item" style="margin-top: 10px;" @click="openAchievements">achievements</div>
@@ -563,8 +564,17 @@
     <!-- About Overlay -->
     <div class="overlay-menu-container" :class="{ 'is-open': aboutOpen }" style="z-index: 15;">
       <div class="back-arrow-fixed" @click="aboutOpen = false">←</div>
-      <div class="overlay-menu-content">
-        <div style="font-size: 1.4em; letter-spacing: .1em; color: var(--text-color);">hi preston :3</div>
+      <div class="overlay-menu-content" style="padding: 0 5vw; text-align: center;">
+        <div style="font-size: 1.1em; line-height: 1.6; color: var(--text-color); font-weight: 300; max-width: 350px; display: flex; flex-direction: column; gap: 2vh; align-items: center;">
+          <div style="font-size: 1.6em; letter-spacing: .2em;">about</div>
+          <div>learn to read japanese while you pretend to do your job with kana.build</div>
+          <div>simply select a wordlist and the characters you want to practice to get started</div>
+          <div>kana.build is entirely open source and you can explore our code on <a href="#" target="_blank" style="color: var(--text-color-darker); text-decoration: none; border-bottom: 1px solid var(--text-color-darker);">github</a></div>
+          <div>
+            if you like the project, consider<br>
+            <a href="https://buymeacoffee.com/kana.build" target="_blank" style="color: var(--text-color-darker); text-decoration: none; border-bottom: 1px solid var(--text-color-darker);">buying us a coffee</a> <span style="white-space: nowrap;">(っ-,-)つ☕︎</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -652,7 +662,7 @@
           "p", "パ", "ピ", "プ", "ペ", "ポ"
         ];
 
-        const availableLists = { all: 'all words', everyday: 'everyday', animals: 'animals', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: 'starred' };
+        const availableLists = { all: 'all words', everyday: 'everyday', animals: 'animals', ideophones: 'ideophones', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', kanji_radicals: 'kanji radicals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: 'starred' };
 
         const themes = [
           { id: 'light', color: '#ffffff', name: 'light' },
@@ -678,6 +688,22 @@
 
         // --- STATS LOGIC ---
         const localStats = JSON.parse(localStorage.getItem('appStats')) || {};
+        const todayStr = new Date().toDateString();
+        
+        let initialDaysActive = localStats.daysActive || 1;
+        let initialLastVisit = localStats.lastVisitDate || todayStr;
+
+        if (initialLastVisit !== todayStr) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (initialLastVisit === yesterday.toDateString()) {
+                initialDaysActive++;
+            } else {
+                initialDaysActive = 1;
+            }
+            initialLastVisit = todayStr;
+        }
+
         const stats = reactive({
           totalWords: localStats.totalWords || 0, 
           bestStreak: localStats.bestStreak || 0, 
@@ -687,13 +713,20 @@
           timeLoggedSeconds: localStats.timeLoggedSeconds || 0,
           completedLists: localStats.completedLists || [],
           fullHiraganaWordsSeen: localStats.fullHiraganaWordsSeen || 0,
-          fullKatakanaWordsSeen: localStats.fullKatakanaWordsSeen || 0
+          fullKatakanaWordsSeen: localStats.fullKatakanaWordsSeen || 0,
+          daysActive: initialDaysActive,
+          lastVisitDate: initialLastVisit
         });
 
         const saveStats = () => localStorage.setItem('appStats', JSON.stringify(stats));
 
+        // Sync day change logic on initialization just in case
+        if (initialLastVisit === todayStr && localStats.lastVisitDate !== todayStr) {
+            saveStats();
+        }
+
         const resetStats = () => { 
-          Object.assign(stats, { totalWords: 0, bestStreak: 0, correct: 0, mistakes: 0, wordFrequency: {}, timeLoggedSeconds: 0, completedLists: [], fullHiraganaWordsSeen: 0, fullKatakanaWordsSeen: 0 }); 
+          Object.assign(stats, { totalWords: 0, bestStreak: 0, correct: 0, mistakes: 0, wordFrequency: {}, timeLoggedSeconds: 0, completedLists: [], fullHiraganaWordsSeen: 0, fullKatakanaWordsSeen: 0, daysActive: 1, lastVisitDate: new Date().toDateString() }); 
           saveStats(); 
           streak.value = 0;
         };
@@ -1124,6 +1157,42 @@
             const data = await res.json(); 
             dictionary.value = data.words; 
             loading.value = false;
+            
+            // Restore List State
+            const savedFilter = localStorage.getItem('savedFilter');
+            const savedWordList = localStorage.getItem('savedWordList');
+            const savedActiveIndex = localStorage.getItem('savedActiveIndex');
+            const savedOrigLen = localStorage.getItem('savedOriginalListLength');
+
+            if (savedFilter && savedWordList) {
+                wordFilter.value = savedFilter;
+                
+                if (savedFilter !== 'all' && savedFilter !== 'starred') {
+                    fetch(`${savedFilter}.csv`).then(res => res.text()).then(text => {
+                        const raw = Papa.parse(text, { skipEmptyLines: true }).data;
+                        if (raw.length > 0 && String(raw[0][0]).toLowerCase().includes('expression')) {
+                           const headers = raw[0].map(h => h.trim().toLowerCase());
+                           const exprIdx = headers.indexOf('expression'), rdgIdx = headers.indexOf('reading'), mngIdx = headers.indexOf('meaning');
+                           currentCSV.value = raw.slice(1).map(r => ({ expression: exprIdx >= 0 ? r[exprIdx] : r[0], reading: rdgIdx >= 0 ? r[rdgIdx] : r[1], meaning: mngIdx >= 0 ? r[mngIdx] : r[2] }));
+                        } else {
+                           currentCSV.value = raw.map(r => ({ expression: r[0], reading: r[1], meaning: r[2] }));
+                        }
+                    }).catch(e => console.log(e));
+                }
+
+                try {
+                    const parsedList = JSON.parse(savedWordList);
+                    if (parsedList && parsedList.length > 0) {
+                        wordList.value = parsedList;
+                        const idx = parseInt(savedActiveIndex || '0');
+                        activeWordIndex.value = (idx >= 0 && idx < parsedList.length) ? idx : 0;
+                        originalListLength.value = parseInt(savedOrigLen || parsedList.length);
+                        return; 
+                    }
+                } catch(e) {}
+            }
+
+            // Fallback if no saved list or invalid
             updateWords(); 
           } catch (e) {}
         });
@@ -1148,6 +1217,14 @@
         watch(kanjiOnlySetting, () => updateWords());
         watch(showKanjiSetting, (v) => { if (!v) kanjiOnlySetting.value = false; });
         watch(starsSetting, (v) => { if (!v && wordFilter.value === 'starred') selectList('all'); });
+        
+        // Watchers for persistent list progress
+        watch(wordFilter, (v) => localStorage.setItem('savedFilter', v));
+        watch(activeWordIndex, (v) => localStorage.setItem('savedActiveIndex', v));
+        watch(originalListLength, (v) => localStorage.setItem('savedOriginalListLength', v));
+        watch(wordList, (v) => {
+            try { localStorage.setItem('savedWordList', JSON.stringify(v)); } catch(e) {}
+        }, { deep: true });
 
         return { 
           dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, statsOpen, achievementsOpen, inputModeOpen, themeOpen, kanaOpen, aboutOpen,
