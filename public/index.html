@@ -21,14 +21,14 @@
           'light': '#ffffff',
           'dark': '#1a1a1a',
           'matcha': '#e2e8d3',
-          'gyokuro': '#212922',
+          'steam': '#4c5844',
           'sakura': '#fce0ea',
-          'yoru': '#1e222b',
-          'kissaten': '#4a3831',
+          'oyasumi': '#1e222b',
+          'coffee': '#4a3831',
           'mikan': '#f7dfd2'
         };
         var color = themeColors[savedTheme] || '#ffffff';
-        var isDark = ['dark', 'gyokuro', 'yoru', 'kissaten'].includes(savedTheme);
+        var isDark = ['dark', 'steam', 'oyasumi', 'coffee'].includes(savedTheme);
 
         // Instant OS hint
         document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
@@ -102,17 +102,18 @@
       --toggle-bg-on: #7b9468;
     }
 
-    html.theme-gyokuro, body.theme-gyokuro, .theme-gyokuro {
-      --background-color: #212922; 
-      --text-color: #a3b89e; 
-      --text-color-light: #6c8067; 
-      --text-color-dark: #c5d9c0; 
-      --text-color-darker: #c3d3bf; 
-      --selected-kana-bg: #485c46; 
+    /* Steam Green Theme (Consolidated and Updated) */
+    html.theme-steam, body.theme-steam, .theme-steam {
+      --background-color: #4c5844; 
+      --text-color: #b8b37b; 
+      --text-color-light: #aab3a2; 
+      --text-color-dark: #b8b37b; 
+      --text-color-darker: #3e4637; 
+      --selected-kana-bg: #3e4637; 
       --error-color: #e07a5f; 
       --success-color: #6c9a79; 
-      --toggle-bg-off: #334034;
-      --toggle-bg-on: #a3b89e;
+      --toggle-bg-off: #3e4637;
+      --toggle-bg-on: #757e6b;
     }
 
     html.theme-sakura, body.theme-sakura, .theme-sakura {
@@ -128,7 +129,7 @@
       --toggle-bg-on: #d18ca8;
     }
 
-    html.theme-yoru, body.theme-yoru, .theme-yoru {
+    html.theme-oyasumi, body.theme-oyasumi, .theme-oyasumi {
       --background-color: #1e222b;
       --text-color: #a9b4c2;
       --text-color-light: #69788a;
@@ -141,7 +142,7 @@
       --toggle-bg-on: #8a99a8;
     }
 
-    html.theme-kissaten, body.theme-kissaten, .theme-kissaten {
+    html.theme-coffee, body.theme-coffee, .theme-coffee {
       --background-color: #4a3831;
       --text-color: #e8d5c4;
       --text-color-light: #b59a8a;
@@ -347,60 +348,68 @@
 
       <div class="active-word-container" @click="handleScreenTap">
         <div v-if="loading">loading dictionary...</div>
-        <div v-else-if="wordList.length > 0" id="active-word">
-          <template v-if="kanjiOnlySetting">
-            {{ activeKanji }}<span class="inline-kanji" v-if="showDetails">[{{ activeWord }}]</span>
-          </template>
-          <template v-else>
-            {{ activeWord }}<span class="inline-kanji" v-if="showKanjiSetting && showDetails && activeKanji">[{{ activeKanji }}]</span>
-          </template>
-        </div>
-        <div v-else @click.stop="openKanaMenuDirect">edit kana to begin</div>
-
-        <div id="active-word-romaji-container">
-          <div id="active-word-romaji">
-            <template v-if="keyboardInputSetting && !showDetails">
-              {{ userInput }}<span class="cursor"></span>
+        
+        <!-- Case: Active Word Exists -->
+        <template v-if="!loading && wordList.length > 0">
+          <div id="active-word">
+            <template v-if="kanjiOnlySetting">
+              {{ activeKanji }}<span class="inline-kanji" v-if="showDetails">[{{ activeWord }}]</span>
             </template>
-            
-            <template v-else-if="showDetails">
-               <template v-if="keyboardInputSetting">
-                 <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
-                 <span class="correction-hint" v-if="hasTypingErrors && activeRomajiTarget">({{ activeRomajiTarget }})</span>
-               </template>
-               <template v-else>
-                 <span>{{ activeRomajiDisplay }}</span>
-               </template>
+            <template v-else>
+              {{ activeWord }}<span class="inline-kanji" v-if="showKanjiSetting && showDetails && activeKanji">[{{ activeKanji }}]</span>
             </template>
           </div>
-          <svg v-if="showDetails && speakerSetting" class="speaker-icon" @click.stop="speakWord" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-          </svg>
-        </div>
 
-        <div id="active-word-definition-container">
-          <div id="active-word-definition">{{ showDetails ? activeDefinition : "" }}</div>
-          <svg v-if="showDetails && starsSetting" class="inline-star" :class="{ 'is-starred': isStarred }" @click.stop="toggleStar" viewBox="0 0 24 24" :fill="isStarred ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-        </div>
-        
-        <!-- Vocal Input Button -->
-        <div v-if="vocalInputSetting && !showDetails" 
-             class="vocal-record-btn" 
-             :class="{ 'is-recording': isRecording }"
-             @pointerdown.stop="startRecording"
-             @pointerup.stop="stopRecording"
-             @pointerleave.stop="stopRecording"
-             @pointercancel.stop="stopRecording">
-        </div>
+          <div id="active-word-romaji-container">
+            <div id="active-word-romaji">
+              <template v-if="keyboardInputSetting && !showDetails">
+                {{ userInput }}<span class="cursor"></span>
+              </template>
+              
+              <template v-else-if="showDetails">
+                 <template v-if="keyboardInputSetting">
+                   <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
+                   <span class="correction-hint" v-if="hasTypingErrors && activeRomajiTarget">({{ activeRomajiTarget }})</span>
+                 </template>
+                 <template v-else>
+                   <span>{{ activeRomajiDisplay }}</span>
+                 </template>
+              </template>
+            </div>
+            
+            <svg v-if="showDetails && speakerSetting && wordList.length > 0" class="speaker-icon" @click.stop="speakWord" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          </div>
 
-        <!-- Self Grade Buttons -->
-        <div v-if="showDetails && selfGradeSetting" class="self-grade-container">
-          <div class="grade-btn incorrect" :class="{ 'selected': selfGradeResult === 'incorrect' }" @click="handleSelfGrade(false, $event)"></div>
-          <div class="grade-btn correct" :class="{ 'selected': selfGradeResult === 'correct' }" @click="handleSelfGrade(true, $event)"></div>
+          <div id="active-word-definition-container">
+            <div id="active-word-definition">{{ showDetails ? activeDefinition : "" }}</div>
+            
+            <svg v-if="showDetails && starsSetting && wordList.length > 0" class="inline-star" :class="{ 'is-starred': isStarred }" @click.stop="toggleStar" viewBox="0 0 24 24" :fill="isStarred ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          
+          <div v-if="vocalInputSetting && !showDetails" 
+               class="vocal-record-btn" 
+               :class="{ 'is-recording': isRecording }"
+               @pointerdown.stop="startRecording"
+               @pointerup.stop="stopRecording"
+               @pointerleave.stop="stopRecording"
+               @pointercancel.stop="stopRecording">
+          </div>
+
+          <div v-if="showDetails && selfGradeSetting" class="self-grade-container">
+            <div class="grade-btn incorrect" :class="{ 'selected': selfGradeResult === 'incorrect' }" @click="handleSelfGrade(false, $event)"></div>
+            <div class="grade-btn correct" :class="{ 'selected': selfGradeResult === 'correct' }" @click="handleSelfGrade(true, $event)"></div>
+          </div>
+        </template>
+
+        <!-- Case: No Words (Empty State) -->
+        <div v-else-if="!loading" @click.stop="openKanaMenuDirect" style="color: var(--text-color-light);">
+          edit kana to begin
         </div>
       </div>
       
@@ -603,19 +612,57 @@
         const isDragging = ref(false), dragAction = ref(null), lastToggledChar = ref(null);
 
         // --- CONSTANTS ---
-        const hChars = [" ", "a", "i", "u", "e", "o", "-", "あ", "い", "う", "え", "お", "k", "か", "き", "く", "け", "こ", "s", "さ", "し", "す", "せ", "そ", "t", "た", "ち", "つ", "て", "と", "n", "な", "に", "ぬ", "ね", "の", "h", "は", "ひ", "ふ", "へ", "ほ", "m", "ま", "み", "む", "め", "も", "y", "や", " ", "ゆ", " ", "よ", "r", "ら", "り", "る", "れ", "ろ", "w", "わ", " ", " ", " ", "を", "n/m", " ", " ", "ん", " ", " ", "g", "が", "ぎ", "ぐ", "げ", "ご", "z", "ざ", "じ", "ず", "ぜ", "ぞ", "d", "だ", "ぢ", "づ", "で", "ど", "b", "ば", "び", "ぶ", "べ", "ぼ", "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"];
-        const kChars = [" ", "a", "i", "u", "e", "o", "-", "ア", "イ", "ウ", "エ", "オ", "k", "カ", "キ", "ク", "ケ", "コ", "s", "サ", "シ", "ス", "セ", "ソ", "t", "タ", "チ", "ツ", "テ", "ト", "n", "ナ", "ニ", "ヌ", "ネ", "ノ", "h", "ハ", "ヒ", "フ", "ヘ", "ホ", "m", "マ", "ミ", "ム", "メ", "モ", "y", "ヤ", " ", "ユ", " ", "ヨ", "r", "ラ", "リ", "ル", "レ", "ロ", "w", "ワ", " ", " ", " ", "ヲ", "n/m", " ", " ", "ン", " ", " ", "g", "ガ", "ギ", "グ", "ゲ", "ゴ", "z", "ザ", "ジ", "ズ", "ゼ", "ゾ", "d", "ダ", "ヂ", "ヅ", "デ", "ド", "b", "バ", "ビ", "ブ", "ベ", "ボ", "p", "パ", "ピ", "プ", "ペ", "ポ"];
+        const hChars = [
+          " ", "a", "i", "u", "e", "o",
+          "-", "あ", "い", "う", "え", "お",
+          "k", "か", "き", "く", "け", "こ",
+          "s", "さ", "し", "す", "せ", "そ",
+          "t", "た", "ち", "つ", "て", "と",
+          "n", "な", "に", "ぬ", "ね", "の",
+          "h", "は", "ひ", "ふ", "へ", "ほ",
+          "m", "ま", "み", "む", "め", "も",
+          "y", "や", " ", "ゆ", " ", "よ",
+          "r", "ら", "り", "る", "れ", "ろ",
+          "w", "わ", " ", " ", " ", "を",
+          "n/m", " ", " ", "ん", " ", " ",
+          "g", "が", "ぎ", "ぐ", "げ", "ご",
+          "z", "ざ", "じ", "ず", "ぜ", "ぞ",
+          "d", "だ", "ぢ", "づ", "で", "ど",
+          "b", "ば", "び", "ぶ", "べ", "ぼ",
+          "p", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ"
+        ];
+
+        const kChars = [
+          " ", "a", "i", "u", "e", "o",
+          "-", "ア", "イ", "ウ", "エ", "オ",
+          "k", "カ", "キ", "ク", "ケ", "コ",
+          "s", "サ", "シ", "ス", "セ", "ソ",
+          "t", "タ", "チ", "ツ", "テ", "ト",
+          "n", "ナ", "ニ", "ヌ", "ネ", "ノ",
+          "h", "ハ", "ヒ", "フ", "ヘ", "ホ",
+          "m", "マ", "ミ", "ム", "メ", "モ",
+          "y", "ヤ", " ", "ユ", " ", "ヨ",
+          "r", "ラ", "リ", "ル", "レ", "ロ",
+          "w", "ワ", " ", " ", " ", "ヲ",
+          "n/m", " ", " ", "ン", " ", " ",
+          "g", "ガ", "ギ", "グ", "ゲ", "ゴ",
+          "z", "ザ", "ジ", "ズ", "ゼ", "ゾ",
+          "d", "ダ", "ヂ", "ヅ", "デ", "ド",
+          "b", "バ", "ビ", "ブ", "ベ", "ボ",
+          "p", "パ", "ピ", "プ", "ペ", "ポ"
+        ];
+
         const availableLists = { all: 'all words', everyday: 'everyday', animals: 'animals', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: 'starred' };
 
         const themes = [
           { id: 'light', color: '#ffffff', name: 'light' },
           { id: 'dark', color: '#1a1a1a', name: 'dark' },
-          { id: 'gyokuro', color: '#485c46', name: 'gyokuro' },
-          { id: 'matcha', color: '#7b9468', name: 'matcha' },
-          { id: 'yoru', color: '#4a5e78', name: 'yoru' },
-          { id: 'kissaten', color: '#4a3831', name: 'kissaten' },
-          { id: 'mikan', color: '#c76d4a', name: 'mikan' },
-          { id: 'sakura', color: '#d18ca8', name: 'sakura' }
+          { id: 'steam', color: 'rgb(60, 68, 55)', name: 'スチーム' },
+          { id: 'matcha', color: '#7b9468', name: 'まっちゃ' },
+          { id: 'oyasumi', color: '#4a5e78', name: 'おやすみ' },
+          { id: 'coffee', color: '#8a6b58', name: 'コーヒー' },
+          { id: 'mikan', color: '#c76d4a', name: 'みかん' },
+          { id: 'sakura', color: '#d18ca8', name: 'さくら' }
         ];
 
         // --- SPEECH RECOGNITION ---
@@ -626,7 +673,7 @@
           recognition.lang = 'ja-JP';
           recognition.continuous = false;
           recognition.interimResults = false;
-          recognition.maxAlternatives = 5; // Request up to 5 guesses instead of 1
+          recognition.maxAlternatives = 5; 
         }
 
         // --- STATS LOGIC ---
@@ -749,7 +796,7 @@
         const activeRomajiDisplay = computed(() => activeWordData.value ? getRomaji(activeWordData.value.text) : "");
 
         const speakWord = () => {
-          if (!('speechSynthesis' in window)) return;
+          if (!('speechSynthesis' in window) || wordList.value.length === 0) return;
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(activeWord.value);
           utterance.lang = 'ja-JP';
@@ -790,15 +837,15 @@
             'light': '#ffffff',
             'dark': '#1a1a1a',
             'matcha': '#e2e8d3',
-            'gyokuro': '#212922',
+            'steam': '#4c5844',
             'sakura': '#fce0ea',
-            'yoru': '#1e222b',
-            'kissaten': '#4a3831',
+            'oyasumi': '#1e222b',
+            'coffee': '#4a3831',
             'mikan': '#f7dfd2'
           };
           
           var color = themeColors[themeId];
-          var isDark = ['dark', 'gyokuro', 'yoru', 'kissaten'].includes(themeId);
+          var isDark = ['dark', 'steam', 'oyasumi', 'coffee'].includes(themeId);
           
           document.documentElement.style.backgroundColor = color;
           document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
@@ -811,9 +858,19 @@
 
         // --- CORE FUNCTIONS ---
         const toggleStar = () => {
+          if (wordList.value.length === 0) return;
           if (isStarred.value) starredWords.delete(activeWord.value);
           else starredWords.add(activeWord.value);
           localStorage.setItem('starredWords', JSON.stringify([...starredWords]));
+        };
+
+        const shuffleArray = (array) => {
+          const newArray = [...array];
+          for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+          }
+          return newArray;
         };
 
         const updateWords = () => {
@@ -832,7 +889,7 @@
           
           originalListLength.value = sourceList.length;
 
-          wordList.value = sourceList.filter(w => {
+          const filtered = sourceList.filter(w => {
             if (kanjiOnlySetting.value && (!w.kanji || !/[\u4e00-\u9faf]/.test(w.kanji))) return false;
             for (let c of w.text) { 
               if (c === "ー" || c === " " || !wanakana.isKana(c)) continue;
@@ -840,7 +897,10 @@
               if (!selectedKana.has(norm)) return false;
             }
             return true;
-          }).sort(() => Math.random() - 0.5);
+          });
+          
+          wordList.value = shuffleArray(filtered);
+          
           activeWordIndex.value = 0; showDetails.value = false; selfGradeResult.value = null;
           if (wordList.value.length > 0 && !loading.value) trackWordAppearance(wordList.value[0].text);
         };
@@ -877,6 +937,11 @@
         };
 
         const handleScreenTap = () => {
+          if (wordList.value.length === 0) {
+            openKanaMenuDirect();
+            return;
+          }
+          
           if (showDetails.value) {
             if (selfGradeSetting.value && selfGradeResult.value === null) return;
             nextWord();
@@ -886,7 +951,7 @@
         };
 
         const handleEnter = () => {
-          if (!keyboardInputSetting.value) return;
+          if (!keyboardInputSetting.value || wordList.value.length === 0) return;
           if (showDetails.value) nextWord();
           else {
             if (!hasTypingErrors.value && userInput.value.length > 0) { 
@@ -939,7 +1004,6 @@
           recognition.onresult = (event) => {
             const results = event.results[0];
             const transcripts = [];
-            // Collect all 5 alternate guesses the Speech API came up with
             for (let i = 0; i < results.length; i++) {
               transcripts.push(results[i].transcript);
             }
@@ -949,48 +1013,40 @@
         }
 
         const processVocalInput = (transcripts) => {
+          if (wordList.value.length === 0) return;
           const normalizedTarget = wanakana.toHiragana(activeWord.value);
           const currentKanji = activeKanji.value;
 
           let isCorrect = false;
 
-          // Check if ANY of the AI's guesses match our word
           for (let transcript of transcripts) {
             const cleanTranscript = transcript.trim().replace(/[、。！？\s.,!?]/g, '');
             const normalizedInput = wanakana.toHiragana(wanakana.toKana(cleanTranscript));
-            
-            // Strip out long vowels and small tsu pauses that the API accidentally tacks on
             const strippedInput = normalizedInput.replace(/[ーっッ]/g, '');
             const strippedTarget = normalizedTarget.replace(/[ーっッ]/g, '');
 
-            // 1. Exact Match (Kana)
             if (normalizedInput === normalizedTarget) {
               isCorrect = true; break;
             } 
-            // 2. Exact Match (Kanji) - Speech API heavily favors Kanji for short words
             else if (currentKanji && cleanTranscript === currentKanji) {
               isCorrect = true; break;
             } 
-            // 3. Ignore long vowels and small tsu (e.g. ワー vs ワ, あっ vs あ)
             else if (strippedInput === strippedTarget && strippedTarget.length > 0) {
               isCorrect = true; break;
             } 
-            // 4. Substring forgiveness for 1-2 character words (catches trailing noises)
             else if (normalizedTarget.length <= 2 && normalizedInput.includes(normalizedTarget)) {
               isCorrect = true; break;
             } 
             else if (currentKanji && currentKanji.length <= 2 && cleanTranscript.includes(currentKanji)) {
               isCorrect = true; break;
             } 
-            // 5. Romaji Fallback (in case the API outputs English like "ki" instead of "き")
             else if (cleanTranscript.toLowerCase() === activeRomajiTarget.value) {
               isCorrect = true; break;
             }
-            // 6. Common isolated particle pronunciation quirks
             else if (normalizedTarget.length === 1) {
-              if (normalizedTarget === 'へ' && normalizedInput.includes('え')) { isCorrect = true; break; } // he -> e
-              if (normalizedTarget === 'を' && normalizedInput.includes('お')) { isCorrect = true; break; } // wo -> o
-              if (normalizedTarget === 'は' && normalizedInput.includes('わ')) { isCorrect = true; break; } // ha -> wa
+              if (normalizedTarget === 'へ' && normalizedInput.includes('え')) { isCorrect = true; break; }
+              if (normalizedTarget === 'を' && normalizedInput.includes('お')) { isCorrect = true; break; }
+              if (normalizedTarget === 'は' && normalizedInput.includes('わ')) { isCorrect = true; break; }
             }
           }
 
