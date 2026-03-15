@@ -592,8 +592,8 @@
   <script>
     const { createApp, ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const KAOMOJI = ["(o^▽^o)", "ヽ(・∀・)ﾉ", "(´｡• ω •｡`)", "(￣ω￣)", "(*¯︶¯*)"];
-    const correctSound = new Audio('public/Correct.mp3');
-    const incorrectSound = new Audio('public/Incorrect.mp3');
+    const correctSound = new Audio('public/sounds/Correct.mp3');
+    const incorrectSound = new Audio('public/sounds/Incorrect.mp3');
 
     createApp({
       setup() {
@@ -908,7 +908,7 @@
         const selectList = async (id) => {
           wordFilter.value = id;
           if (id !== 'all' && id !== 'starred') {
-            const res = await fetch(`public/${id}.csv`); const text = await res.text();
+            const res = await fetch(`public/wordlists/${id}.csv`); const text = await res.text();
             const raw = Papa.parse(text, { skipEmptyLines: true }).data;
             if (raw.length > 0 && String(raw[0][0]).toLowerCase().includes('expression')) {
                const headers = raw[0].map(h => h.trim().toLowerCase());
