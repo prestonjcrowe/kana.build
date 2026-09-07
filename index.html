@@ -10,15 +10,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   
   <!-- 1. Single static theme-color meta tag -->
-  <meta name="theme-color" content="#ffffff">
-  
+  <meta name="theme-color" content="#f3f4f6">
+
   <!-- 2. Cleaned-up Launch Script -->
   <script>
     (function() {
       try {
         var savedTheme = localStorage.getItem('currentTheme') || 'light';
         var themeColors = {
-          'light': '#ffffff',
+          'light': '#f3f4f6',
           'dark': '#1a1a1a',
           'matcha': '#e2e8d3',
           'steam': '#4c5844',
@@ -27,16 +27,14 @@
           'coffee': '#4a3831',
           'mikan': '#f7dfd2'
         };
-        var color = themeColors[savedTheme] || '#ffffff';
+        var color = themeColors[savedTheme] || '#f3f4f6';
         var isDark = ['dark', 'steam', 'oyasumi', 'coffee'].includes(savedTheme);
 
         // Instant OS hint
         document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
         document.documentElement.style.backgroundColor = color;
-        
-        if (savedTheme !== 'light') {
-          document.documentElement.classList.add('theme-' + savedTheme);
-        }
+
+        document.documentElement.setAttribute('data-theme', savedTheme);
 
         // Properly update the EXISTING meta tag instead of creating duplicates
         var meta = document.querySelector('meta[name="theme-color"]');
@@ -52,198 +50,502 @@
   <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
+
+    /* ------------------------------------------------------------------
+       design tokens — shared with kanji.build
+       ------------------------------------------------------------------ */
     :root {
-      --text-color: #626262;
-      --text-color-light: #b5afa7;
-      --text-color-dark: #c3c3c3;
-      --text-color-darker: #5f6061;
-      --selected-kana-bg: #676767;
-      --background-color: white;
-      --error-color: #ff6b6b;
-      --success-color: #51cf66;
-      --toggle-bg-off: #c3c3c3;
-      --toggle-bg-on: #676767;
+      --primary: #3b82f6;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --card-back-bg: #fafafa;
+      --text: #1f2937;
+      --text-muted: #4b5563;
+      --success: #10b981;
+      --error: #ef4444;
+      --border: #e5e7eb;
+      --border-hover: #d1d5db;
+      --input-bg: #ffffff;
       --vh: 100vh;
-      user-select: none;
+      --kana-cell: clamp(24px, 4vh, 38px);
     }
 
-    html { 
-      background-color: var(--background-color) !important;
+    [data-theme="dark"] {
+      --primary: #60a5fa;
+      --bg: #1a1a1a;
+      --card-bg: #2d2d2d;
+      --card-back-bg: #222222;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #34d399;
+      --error: #f87171;
+      --border: #404040;
+      --border-hover: #525252;
+      --input-bg: #3f3f46;
+    }
+
+    [data-theme="matcha"] {
+      --primary: #5d704d;
+      --bg: #e2e8d3;
+      --card-bg: #f1f5e8;
+      --card-back-bg: #e8ecd9;
+      --text: #2d3a24;
+      --text-muted: #4f5e42;
+      --success: #4b834b;
+      --error: #b4553a;
+      --border: #d4dcc5;
+      --border-hover: #c5d0b2;
+      --input-bg: #ffffff;
+    }
+
+    [data-theme="steam"] {
+      --primary: #a3b19b;
+      --bg: #4c5844;
+      --card-bg: #5e6a55;
+      --card-back-bg: #55604d;
+      --text: #eef1ea;
+      --text-muted: #d0d7ca;
+      --success: #709d70;
+      --error: #e0866a;
+      --border: #6d7b63;
+      --border-hover: #7f8c75;
+      --input-bg: #6d7b63;
+    }
+
+    [data-theme="sakura"] {
+      --primary: #db7093;
+      --bg: #fce0ea;
+      --card-bg: #fff0f5;
+      --card-back-bg: #f9e6ed;
+      --text: #5c3041;
+      --text-muted: #8c5b6e;
+      --success: #c45b7e;
+      --error: #cf4b3e;
+      --border: #f5cddb;
+      --border-hover: #efbad0;
+      --input-bg: #ffffff;
+    }
+
+    [data-theme="oyasumi"] {
+      --primary: #7e92b8;
+      --bg: #1e222b;
+      --card-bg: #292e3a;
+      --card-back-bg: #222630;
+      --text: #c8d1e0;
+      --text-muted: #8b9bb4;
+      --success: #5e8a75;
+      --error: #e06c75;
+      --border: #3b4252;
+      --border-hover: #4c566a;
+      --input-bg: #3b4252;
+    }
+
+    [data-theme="coffee"] {
+      --primary: #c19a8a;
+      --bg: #4a3831;
+      --card-bg: #5c473f;
+      --card-back-bg: #523f38;
+      --text: #e8dcd8;
+      --text-muted: #baa8a1;
+      --success: #a07d6f;
+      --error: #dd8b6f;
+      --border: #755f56;
+      --border-hover: #8a7369;
+      --input-bg: #755f56;
+    }
+
+    [data-theme="mikan"] {
+      --primary: #e88e5d;
+      --bg: #f7dfd2;
+      --card-bg: #fff2ec;
+      --card-back-bg: #fae8df;
+      --text: #5c3e2e;
+      --text-muted: #8a6552;
+      --success: #d17543;
+      --error: #c0392b;
+      --border: #efd0c0;
+      --border-hover: #e8c2b0;
+      --input-bg: #ffffff;
+    }
+
+    /* ------------------------------------------------------------------
+       base
+       ------------------------------------------------------------------ */
+    * { box-sizing: border-box; padding: 0; margin: 0; -webkit-tap-highlight-color: transparent; }
+
+    html {
+      background-color: var(--bg);
+    }
+
+    html, body {
+      height: var(--vh);
+      width: 100%;
+      overflow: hidden;
     }
 
     body {
-      background-color: var(--background-color);
-      transition: background-color 0.3s ease, color 0.3s ease;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      letter-spacing: 0.02em;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background-color 0.3s, color 0.3s;
+      text-transform: lowercase;
+      user-select: none;
     }
 
-    html.theme-dark, body.theme-dark, .theme-dark {
-      --text-color: #dfdfdf;
-      --text-color-light: #b5b5b5;
-      --text-color-dark: #d5d5d5;
-      --text-color-darker: #dddddd;
-      --selected-kana-bg: #4c4c4c;
-      --background-color: #1a1a1a;
-      --error-color: #ff5252;
-      --success-color: #69db7c;
-      --toggle-bg-off: #4c4c4c;
-      --toggle-bg-on: #d5d5d5;
+    #app {
+      height: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 56px 20px 76px;
+      display: flex;
+      flex-direction: column;
+      transition: padding 0.3s ease;
+    }
+    #app.is-keyboard-open { padding-top: 16px; padding-bottom: 60px; }
+
+    .panel {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      transition: background-color 0.3s, border-color 0.3s;
+      width: 100%;
+      box-sizing: border-box;
     }
 
-    html.theme-matcha, body.theme-matcha, .theme-matcha {
-      --background-color: #e2e8d3; 
-      --text-color: #5c7050; 
-      --text-color-light: #9cb38d; 
-      --text-color-dark: #86997a; 
-      --text-color-darker: #5b744d; 
-      --selected-kana-bg: #7b9468; 
-      --error-color: #e07a5f; 
-      --success-color: #4a7c59; 
-      --toggle-bg-off: #cbd6c3;
-      --toggle-bg-on: #7b9468;
+    button, .btn-like {
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: normal;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-transform: lowercase;
+      font-size: 14px;
+    }
+    .primary-btn { background: var(--primary); color: white; flex: 1; }
+    .primary-btn:hover { opacity: 0.9; }
+
+    .secondary-btn { background: var(--border); color: var(--text); flex: 1; }
+    .secondary-btn:hover { background: var(--border-hover); }
+    .secondary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .settings-trigger {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+    .settings-trigger:hover { background: var(--border); }
+
+    /* ------------------------------------------------------------------
+       modals
+       ------------------------------------------------------------------ */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(3px);
+      padding: 20px;
+    }
+    .modal {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 350px;
+      max-height: 100%;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .modal::-webkit-scrollbar { display: none; }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .modal-header h2 { margin: 0; font-size: 1.5em; text-transform: lowercase; font-weight: normal; }
+    .close-btn {
+      background: transparent;
+      color: var(--text);
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      font-size: 1.5em;
+    }
+    .close-btn:hover { background: var(--border); }
+
+    .section-label {
+      margin: 0 0 12px 0;
+      font-size: 1em;
+      color: var(--text-muted);
+      text-transform: lowercase;
+      font-weight: normal;
+    }
+    .section + .section { margin-top: 25px; }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .theme-btn {
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      text-align: center;
+    }
+    .theme-btn.active {
+      border-color: var(--primary);
+      transform: scale(0.96);
+      box-shadow: 0 0 0 2px var(--bg);
     }
 
-    /* Steam Green Theme */
-    html.theme-steam, body.theme-steam, .theme-steam {
-      --background-color: #4c5844; 
-      --text-color: #b8b37b; 
-      --text-color-light: #aab3a2; 
-      --text-color-dark: #b8b37b; 
-      --text-color-darker: #282e23; 
-      --selected-kana-bg: #3e4637; 
-      --error-color: #e07a5f; 
-      --success-color: #6c9a79; 
-      --toggle-bg-off: #3e4637;
-      --toggle-bg-on: #757e6b;
+    /* ------------------------------------------------------------------
+       list / mode pills
+       ------------------------------------------------------------------ */
+    .list-selection { display: flex; flex-direction: column; gap: 8px; }
+    .list-selection-row { display: flex; gap: 8px; width: 100%; }
+    .list-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+    .list-btn {
+      padding: 6px 12px;
+      border-radius: 16px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: inherit;
+      text-transform: lowercase;
+      white-space: nowrap;
+    }
+    .list-btn.uppercase-text { text-transform: uppercase; }
+    .list-btn:hover { border-color: var(--primary); }
+    .list-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .list-btn.full-width { width: 100%; box-sizing: border-box; }
+
+    /* ------------------------------------------------------------------
+       toggles
+       ------------------------------------------------------------------ */
+    .settings-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      cursor: pointer;
+      padding: 4px 0;
+      font-size: 14px;
+    }
+    .toggle-switch {
+      width: 44px;
+      height: 22px;
+      border-radius: 11px;
+      background-color: var(--border);
+      position: relative;
+      transition: background-color 0.3s;
+      flex-shrink: 0;
+    }
+    .toggle-switch.is-active { background-color: var(--primary); }
+    .toggle-knob {
+      width: 16px;
+      height: 16px;
+      background-color: var(--card-bg);
+      border-radius: 50%;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .toggle-switch.is-active .toggle-knob { transform: translateX(22px); }
+
+    .controls { display: flex; justify-content: space-between; gap: 10px; }
+
+    /* ------------------------------------------------------------------
+       study panel
+       ------------------------------------------------------------------ */
+    .study-panel { flex: 1; min-height: 0; cursor: pointer; }
+
+    .deck-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      gap: 12px;
+    }
+    .deck-count {
+      font-weight: normal;
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-size: 13px;
+      /* auto margin keeps it hard right whether or not the streak is showing */
+      margin-left: auto;
     }
 
-    html.theme-sakura, body.theme-sakura, .theme-sakura {
-      --background-color: #fce0ea;
-      --text-color: #a87b8d;
-      --text-color-light: #d4aebf;
-      --text-color-dark: #b88a9e;
-      --text-color-darker: #c688a6;
-      --selected-kana-bg: #d18ca8;
-      --error-color: #e56b6f; 
-      --success-color: #7fb069; 
-      --toggle-bg-off: #e8d5dd;
-      --toggle-bg-on: #d18ca8;
+    .header-icon-btn {
+      background: transparent;
+      color: var(--text-muted);
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .header-icon-btn:hover { background: var(--border); color: var(--text); }
+
+    .study-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      row-gap: 22px;
+      padding: 10px 0;
     }
 
-    html.theme-oyasumi, body.theme-oyasumi, .theme-oyasumi {
-      --background-color: #1e222b;
-      --text-color: #a9b4c2;
-      --text-color-light: #69788a;
-      --text-color-dark: #8a99a8;
-      --text-color-darker: #c3cbd6;
-      --selected-kana-bg: #4a5e78;
-      --error-color: #ff6b6b;
-      --success-color: #48cae4; 
-      --toggle-bg-off: #323b47;
-      --toggle-bg-on: #8a99a8;
+    #active-word {
+      font-size: clamp(1.75rem, 7vw, 2.75rem);
+      text-align: center;
+      text-transform: none;
+      line-height: 1.25;
     }
+    .inline-kanji { font-size: 0.7em; color: var(--text-muted); font-weight: 300; margin-left: 0.2em; }
 
-    html.theme-coffee, body.theme-coffee, .theme-coffee {
-      --background-color: #4a3831;
-      --text-color: #e8d5c4;
-      --text-color-light: #b59a8a;
-      --text-color-dark: #f5e6d3;
-      --text-color-darker: #d9cdca;
-      --selected-kana-bg: #8a6b58;
-      --error-color: #e56b6f; 
-      --success-color: #6c9a79; 
-      --toggle-bg-off: #5c4a42;
-      --toggle-bg-on: #8a6b58;
+    #active-word-romaji-container {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      width: 100%;
+      align-items: center;
+      min-height: 2rem;
     }
-
-    html.theme-mikan, body.theme-mikan, .theme-mikan {
-      --background-color: #f7dfd2;
-      --text-color: #825746;
-      --text-color-light: #c49c89;
-      --text-color-dark: #a37460;
-      --text-color-darker: #9a644e;
-      --selected-kana-bg: #c76d4a;
-      --error-color: #d64933; 
-      --success-color: #5b8a72; 
-      --toggle-bg-off: #e3cec3;
-      --toggle-bg-on: #c76d4a;
+    #active-word-romaji {
+      grid-column: 2;
+      font-size: clamp(1.25rem, 5vw, 1.75rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    .char-match { color: var(--success); }
+    .char-error { color: var(--error); }
+    .correction-hint { color: var(--text-muted); font-size: 0.7em; margin-left: 12px; font-weight: 300; }
 
-    * { box-sizing: border-box; padding: 0; margin: 0; -webkit-tap-highlight-color: transparent; }
-    body, html { 
-      height: var(--vh); 
-      width: 100%; 
-      color: var(--text-color); 
-      font-family: sans-serif; 
-      overflow: hidden; 
-    }
-    #app { height: 100%; width: 100%; position: relative; }
-    .app-container { display: grid; grid-template-rows: 1fr 1fr 1fr; height: 100%; width: 100%; }
-    .banner-container { display: flex; flex-direction: column; align-items: center; padding-top: 5em; transition: padding-top 0.3s ease; }
-    .banner-title { font-size: 1.6em; letter-spacing: .2em; padding: 0.4em; }
-    .banner-subtitle { font-size: 1.1em; color: var(--text-color-light); white-space: pre; }
-
-    .active-word-container { display: flex; flex-direction: column; align-items: center; padding: 25px; row-gap: 25px; cursor: pointer; transition: row-gap 0.3s ease, padding 0.3s ease; }
-    .app-container.is-keyboard-open .banner-container { padding-top: 2em; }
-    
-    #active-word { font-size: 4vh; text-align: center; }
-    .inline-kanji { font-size: 0.75em; color: var(--text-color-light); font-weight: 300; margin-left: 0.2em; }
-    
-    #active-word-romaji-container { display: grid; grid-template-columns: 1fr auto 1fr; width: 100%; align-items: center; min-height: 3.5vh; }
-    #active-word-romaji { grid-column: 2; font-size: 3.5vh; display: flex; align-items: center; justify-content: center; }
-    .char-match { color: var(--success-color); }
-    .char-error { color: var(--error-color); }
-    .correction-hint { color: var(--text-color-light); font-size: 0.8em; margin-left: 12px; font-weight: 300; }
-    
     .speaker-icon {
       grid-column: 3;
       justify-self: start;
-      width: 3vh;
-      height: 3vh;
+      width: 22px;
+      height: 22px;
       margin-left: 12px;
       cursor: pointer;
-      color: var(--text-color-light);
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .speaker-icon:active { transform: scale(0.8); color: var(--text-color); }
-
-    #active-word-definition-container { display: grid; grid-template-columns: 1fr auto 1fr; width: 100%; align-items: center; }
-    #active-word-definition { grid-column: 2; font-size: 2.75vh; letter-spacing: .05em; text-align: center; }
-    
-    .inline-star { 
-      grid-column: 3; 
-      justify-self: start; 
-      width: 2.5vh; 
-      height: 2.5vh;
-      margin-left: 12px; 
-      color: var(--text-color-light); 
-      cursor: pointer; 
+      color: var(--text-muted);
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s ease;
-      flex-shrink: 0; 
     }
+    .speaker-icon:hover { color: var(--primary); }
+    .speaker-icon:active { transform: scale(0.8); color: var(--primary); }
+
+    #active-word-definition-container {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      width: 100%;
+      align-items: center;
+      min-height: 1.5rem;
+    }
+    #active-word-definition {
+      grid-column: 2;
+      font-size: clamp(1rem, 4vw, 1.35rem);
+      letter-spacing: .05em;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .inline-star {
+      grid-column: 3;
+      justify-self: start;
+      width: 19px;
+      height: 19px;
+      margin-left: 12px;
+      color: var(--border-hover);
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s ease;
+      flex-shrink: 0;
+    }
+    .inline-star:hover { color: var(--primary); }
     .inline-star:active { transform: scale(0.8); }
-    .inline-star.is-starred { color: var(--text-color-darker); }
+    .inline-star.is-starred { color: var(--primary); }
 
-    .action-container { grid-row: 3; height: 100%; width: 100%; cursor: pointer; }
-    
-    .self-grade-container { display: flex; justify-content: center; column-gap: 80px; margin-top: 25px; } 
-    .grade-btn { width: 5vh; height: 5vh; border-radius: 50%; border: 3px solid; cursor: pointer; transition: background-color 0.2s ease; }
-    .grade-btn.incorrect { border-color: var(--error-color); }
-    .grade-btn.correct { border-color: var(--success-color); }
-    .grade-btn.incorrect.selected { background-color: var(--error-color); }
-    .grade-btn.correct.selected { background-color: var(--success-color); }
+    .self-grade-container { display: flex; justify-content: center; column-gap: 80px; margin-top: 10px; }
+    .grade-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 3px solid;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      background: transparent;
+      padding: 0;
+    }
+    .grade-btn.incorrect { border-color: var(--error); }
+    .grade-btn.correct { border-color: var(--success); }
+    .grade-btn.incorrect.selected { background-color: var(--error); }
+    .grade-btn.correct.selected { background-color: var(--success); }
 
-    .vocal-record-btn { 
-      width: 6vh; 
-      height: 6vh; 
-      background-color: var(--error-color); 
-      border-radius: 50%; 
-      margin-top: 50px; 
+    .vocal-record-btn {
+      width: 54px;
+      height: 54px;
+      background-color: var(--error);
+      border-radius: 50%;
+      margin-top: 10px;
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
       cursor: pointer;
       touch-action: none;
     }
-    .vocal-record-btn.is-recording { 
-      transform: scale(1.4); 
+    .vocal-record-btn.is-recording {
+      transform: scale(1.4);
       animation: vocal-pulse 1.2s infinite ease-in-out;
     }
     @keyframes vocal-pulse {
@@ -251,106 +553,176 @@
       50% { opacity: 0.6; }
     }
 
-    .cursor { display: inline-block; width: 2px; height: 3vh; background-color: var(--text-color); margin-left: 2px; animation: blink 1s step-end infinite; }
-    @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--text-color); } }
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.2em;
+      background-color: var(--text);
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--text); } }
     .hidden-input { position: absolute; top: 50%; left: 50%; opacity: 0; pointer-events: none; z-index: -1; }
 
-    .bottom-left-container { position: absolute; bottom: 30px; left: 30px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; z-index: 5; }
-    .streak-display, .word-counter-display { color: var(--text-color-light); font-size: 1.1em; }
-    
-    .list-floating-button { position: absolute; bottom: 30px; right: 30px; color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
-    .settings-button-bottom { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: var(--text-color-light); font-size: 1.1em; cursor: pointer; z-index: 5; }
-
-    .overlay-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s; transform: translateY(100%); z-index: 10; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; }
-    .overlay-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
-    .overlay-menu-content { display: flex; flex-direction: column; align-items: center; row-gap: 30px; width: 100%; scrollbar-width: none; -ms-overflow-style: none; }
-    .overlay-menu-content::-webkit-scrollbar { display: none; }
-    
-    .back-arrow-fixed { position: absolute; top: 4vh; left: 8vw; font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); z-index: 20; width: 3vh; text-align: left; }
-
-    .settings-toggle-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 240px; cursor: pointer; }
-    .toggle-switch { width: 44px; height: 22px; border-radius: 11px; background-color: var(--toggle-bg-off); position: relative; transition: 0.3s; }
-    .toggle-switch.is-active { background-color: var(--toggle-bg-on); }
-    .toggle-knob { width: 16px; height: 16px; background-color: var(--background-color); border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-    .toggle-switch.is-active .toggle-knob { transform: translateX(22px); }
-
-    .stats-row { display: flex; justify-content: space-between; width: 240px; align-items: center; }
-    .stats-label { color: var(--text-color); }
-    .stats-value { color: var(--text-color-darker); font-weight: bold; }
-
-    .achievements-list-container { display: flex; flex-direction: column; row-gap: 20px; width: 240px; }
-    .achievement-star { width: 2vh; height: 2vh; flex-shrink: 0; }
-
-    .ui-star-icon { width: 1.2em; height: 1.2em; vertical-align: middle; display: inline-block; margin-bottom: 0.1em; }
-
-    .theme-circle {
-      width: 4vh;
-      height: 4vh;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-      box-shadow: 0 0 0 1px var(--text-color-light); 
-    }
-    .theme-circle:active {
-      transform: scale(0.9);
-    }
-    .theme-circle.is-selected {
-      box-shadow: 0 0 0 4px var(--background-color), 0 0 0 6px var(--text-color);
-      border: none;
-    }
-    .theme-name-display {
-      position: absolute;
-      bottom: 30px;
-      right: 30px;
-      color: var(--text-color-light);
-      font-size: 1.1em;
-      pointer-events: none;
-      z-index: 20;
-    }
-
-    .n-levels-row {
+    /* panel footer — streak */
+    .study-footer {
       display: flex;
-      column-gap: 20px;
+      align-items: center;
+      min-height: 24px;
+    }
+    .streak-display {
+      color: var(--text-muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .streak-value { color: var(--primary); }
+
+    .kaomoji {
+      color: var(--text-muted);
+      white-space: pre;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .header-kaomoji {
+      font-size: 1.1em;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .empty-state {
+      padding: 15px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95em;
+    }
+
+    /* ------------------------------------------------------------------
+       stats & achievements
+       ------------------------------------------------------------------ */
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 15px;
+      font-size: 14px;
+    }
+    .stats-label { color: var(--text-muted); }
+    .stats-value { color: var(--text); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stats-list { display: flex; flex-direction: column; gap: 12px; }
+    .achievement-star { width: 16px; height: 16px; flex-shrink: 0; }
+    .achievement-row.is-completed { color: var(--primary); }
+    .achievement-row.is-completed .stats-label { color: var(--text); }
+
+    .about-text {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .about-text a {
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1px solid var(--primary);
+    }
+
+    /* ------------------------------------------------------------------
+       kana editor (full screen)
+       ------------------------------------------------------------------ */
+    .kana-menu-container {
+      position: fixed;
+      inset: 0;
+      background-color: var(--bg);
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s;
+      transform: translateY(100%);
+      z-index: 800;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      display: flex;
       align-items: center;
       justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .kana-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
+
+    .kana-panel {
+      max-width: 350px;
+      margin: auto;
+      gap: 15px;
+    }
+    .kana-menu-controls-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
       width: 100%;
     }
-    .n-level-btn {
-      color: var(--text-color);
-      padding: 0 5px;
-      cursor: pointer;
+
+    .kana-character-menu-container {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      margin: 0 auto;
+      gap: 4px;
+      width: fit-content;
+      touch-action: none;
     }
-
-    .kana-menu-container { height: 100%; width: 100%; left: 0; top: 0; position: absolute; background-color: var(--background-color); transition: transform 0.4s, opacity 0.4s; transform: translateY(100%); z-index: 100; opacity: 0; visibility: hidden; pointer-events: none; }
-    .kana-menu-container.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
-    .kana-menu-controls-container { display: flex; justify-content: space-between; align-items: center; padding: 4vh 8vw 0 8vw; width: 100%; }
-    .kana-menu-exit-button { font-size: 2.5vh; cursor: pointer; color: var(--text-color-dark); width: 3.8vh; text-align: left; }
-    .kana-menu-list-button { font-size: 3.1vh; cursor: pointer; color: var(--text-color-dark); width: 3.8vh; text-align: right; line-height: 1; }
-    .kana-menu-alphabet-button { font-size: 1.6vh; cursor: pointer; padding: 0.4em 1.4em; color: var(--text-color-dark); }
-    
-    .kana-character-menu-container { padding-top: 2vh; display: grid; grid-template-columns: repeat(6, 1fr); margin: auto; gap: 0.6vh; width: fit-content; touch-action: none; }
-    .kana-menu-romaji-label { font-size: 1.4vh; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color-dark); height: 4vh; }
-    .kana-menu-character { width: 4vh; height: 4vh; font-size: 2.2vh; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color-dark); border-radius: 50%; }
-    .kana-menu-character.selected-kana { background-color: var(--selected-kana-bg); color: var(--background-color) !important; }
-
-    .menu-item { cursor: pointer; }
+    .kana-menu-romaji-label {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      height: var(--kana-cell);
+      width: var(--kana-cell);
+    }
+    .kana-menu-character {
+      width: var(--kana-cell);
+      height: var(--kana-cell);
+      font-size: calc(var(--kana-cell) * 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-radius: 50%;
+      transition: background-color 0.15s, color 0.15s;
+      text-transform: none;
+    }
+    .kana-menu-character:hover { background-color: var(--border); color: var(--text); }
+    .kana-menu-character.selected-kana {
+      background-color: var(--primary);
+      color: white;
+    }
   </style>
 </head>
 <body>
-  <div id="app">
+
+  <div id="app" :class="{ 'is-keyboard-open': isKeyboardOpen }">
     <input type="text" ref="keyboardTrigger" class="hidden-input" v-model="userInput" @keydown.enter="handleEnter" autocapitalize="none" />
 
-    <div class="app-container" :class="{ 'is-keyboard-open': isKeyboardOpen }">
-      <div class="banner-container">
-        <div class="banner-title">kana.build</div>
-        <div class="banner-subtitle">{{ subtitle }}</div>
+    <!-- ============================= study panel ============================= -->
+    <div class="panel study-panel" @click="handleScreenTap">
+      <div class="deck-header">
+        <div class="kaomoji header-kaomoji">{{ subtitle }}</div>
+        <button class="header-icon-btn" @click.stop="openKanaMenuDirect" aria-label="edit kana">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+          </svg>
+        </button>
       </div>
 
-      <div class="active-word-container" @click="handleScreenTap">
-        <div v-if="loading">loading dictionary...</div>
-        
+      <div class="study-body">
+        <div v-if="loading" class="empty-state">loading dictionary...</div>
+
         <!-- Case: Active Word Exists -->
-        <template v-if="!loading && wordList.length > 0">
+        <template v-else-if="wordList.length > 0">
           <div id="active-word">
             <template v-if="kanjiOnlySetting">
               {{ activeKanji }}<span class="inline-kanji" v-if="showDetails">[{{ activeWord }}]</span>
@@ -365,18 +737,18 @@
               <template v-if="keyboardInputSetting && !showDetails">
                 {{ userInput }}<span class="cursor"></span>
               </template>
-              
+
               <template v-else-if="showDetails">
-                 <template v-if="keyboardInputSetting">
-                   <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
-                   <span class="correction-hint" v-if="hasTypingErrors && activeRomajiTarget">({{ activeRomajiTarget }})</span>
-                 </template>
-                 <template v-else>
-                   <span>{{ activeRomajiDisplay }}</span>
-                 </template>
+                <template v-if="keyboardInputSetting">
+                  <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
+                  <span class="correction-hint" v-if="hasTypingErrors && activeRomajiTarget">({{ activeRomajiTarget }})</span>
+                </template>
+                <template v-else>
+                  <span>{{ activeRomajiDisplay }}</span>
+                </template>
               </template>
             </div>
-            
+
             <svg v-if="showDetails && speakerSetting && wordList.length > 0" class="speaker-icon" @click.stop="speakWord" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -386,14 +758,14 @@
 
           <div id="active-word-definition-container">
             <div id="active-word-definition">{{ showDetails ? activeDefinition : "" }}</div>
-            
+
             <svg v-if="showDetails && starsSetting && wordList.length > 0" class="inline-star" :class="{ 'is-starred': isStarred }" @click.stop="toggleStar" viewBox="0 0 24 24" :fill="isStarred ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
           </div>
-          
-          <div v-if="vocalInputSetting && !showDetails" 
-               class="vocal-record-btn" 
+
+          <div v-if="vocalInputSetting && !showDetails"
+               class="vocal-record-btn"
                :class="{ 'is-recording': isRecording }"
                @pointerdown.stop="startRecording"
                @pointerup.stop="stopRecording"
@@ -402,198 +774,224 @@
           </div>
 
           <div v-if="showDetails && selfGradeSetting" class="self-grade-container">
-            <div class="grade-btn incorrect" :class="{ 'selected': selfGradeResult === 'incorrect' }" @click="handleSelfGrade(false, $event)"></div>
-            <div class="grade-btn correct" :class="{ 'selected': selfGradeResult === 'correct' }" @click="handleSelfGrade(true, $event)"></div>
+            <button class="grade-btn incorrect" :class="{ 'selected': selfGradeResult === 'incorrect' }" @click.stop="handleSelfGrade(false, $event)" aria-label="incorrect"></button>
+            <button class="grade-btn correct" :class="{ 'selected': selfGradeResult === 'correct' }" @click.stop="handleSelfGrade(true, $event)" aria-label="correct"></button>
           </div>
         </template>
 
         <!-- Case: No Words (Empty State) -->
-        <div v-else-if="!loading" @click.stop="openKanaMenuDirect" style="color: var(--text-color-light);">
-          edit kana to begin
+        <div v-else class="empty-state">
+          this list is empty.<br><br>
+          <button class="primary-btn" @click.stop="openKanaMenuDirect" style="margin-top: 15px;">edit kana to begin</button>
         </div>
       </div>
-      
-      <div class="action-container" @click="handleScreenTap"></div> 
-    </div>
 
-    <div class="settings-button-bottom" @click="settingsOpen = true">settings</div>
-
-    <div class="bottom-left-container">
-      <div class="word-counter-display" v-if="wordFilter !== 'all' && wordList.length > 0">
-        {{ activeWordIndex + 1 }} / {{ wordList.length }}
-      </div>
-      <div v-if="keyboardInputSetting || selfGradeSetting || vocalInputSetting" class="streak-display">
-        streak: {{ streak }}
+      <div class="study-footer">
+        <div class="streak-display" v-if="keyboardInputSetting || selfGradeSetting || vocalInputSetting">
+          streak: <span class="streak-value">{{ streak }}</span>
+        </div>
+        <div class="deck-count" v-if="wordFilter !== 'all' && wordList.length > 0">
+          {{ activeWordIndex + 1 }}/{{ wordList.length }}
+        </div>
       </div>
     </div>
 
-    <div class="list-floating-button" :style="{ zIndex: listOpen ? 20 : 5 }" @click="listOpen ? resetList() : listOpen = true">
-      <span v-if="listOpen">reset list</span>
-      <svg v-else-if="wordFilter === 'starred'" class="ui-star-icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+    <!-- ============================= settings trigger ============================= -->
+    <button class="settings-trigger" @click="settingsOpen = true" aria-label="settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
       </svg>
-      <span v-else>{{ currentListName }}</span>
-    </div>
+    </button>
 
-    <!-- Main Settings Menu -->
-    <div class="overlay-menu-container" :class="{ 'is-open': settingsOpen }">
-      <div class="back-arrow-fixed" @click="settingsOpen = false">←</div>
-      <div class="overlay-menu-content">
-        <div class="menu-item" @click="transitionToKanaMenu">edit kana</div>
-        <div class="menu-item" @click="inputModeOpen = true">input mode</div>
-        <div class="menu-item" @click="themeOpen = true">theme</div>
-        <div class="menu-item" @click="openStats">stats</div>
-        <div class="settings-toggle-row" @click="showKanjiSetting = !showKanjiSetting">
-          <span>show kanji</span>
-          <div class="toggle-switch" :class="{ 'is-active': showKanjiSetting }"><div class="toggle-knob"></div></div>
+    <!-- ============================= settings modal ============================= -->
+    <div v-if="settingsOpen" class="modal-overlay" @click.self="settingsOpen = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>settings</h2>
+          <button class="close-btn" @click="settingsOpen = false">&times;</button>
         </div>
-        <div v-if="showKanjiSetting" class="settings-toggle-row" @click="kanjiOnlySetting = !kanjiOnlySetting">
-          <span>kanji only</span>
-          <div class="toggle-switch" :class="{ 'is-active': kanjiOnlySetting }"><div class="toggle-knob"></div></div>
-        </div>
-        <div class="settings-toggle-row" @click="speakerSetting = !speakerSetting">
-          <span>speaker</span>
-          <div class="toggle-switch" :class="{ 'is-active': speakerSetting }"><div class="toggle-knob"></div></div>
-        </div>
-        <div class="settings-toggle-row" @click="starsSetting = !starsSetting">
-          <span>stars</span>
-          <div class="toggle-switch" :class="{ 'is-active': starsSetting }"><div class="toggle-knob"></div></div>
-        </div>
-      </div>
-      <div class="list-floating-button" @click="aboutOpen = true">about</div>
-    </div>
 
-    <!-- Input Mode Overlay -->
-    <div class="overlay-menu-container" :class="{ 'is-open': inputModeOpen }" style="z-index: 15;">
-      <div class="back-arrow-fixed" @click="inputModeOpen = false">←</div>
-      <div class="overlay-menu-content">
-        <div class="settings-toggle-row" @click="inputMode = 'automatic'">
-          <span>automatic</span>
-          <div class="toggle-switch" :class="{ 'is-active': inputMode === 'automatic' }"><div class="toggle-knob"></div></div>
-        </div>
-        <div class="settings-toggle-row" @click="inputMode = 'keyboard'">
-          <span>keyboard</span>
-          <div class="toggle-switch" :class="{ 'is-active': inputMode === 'keyboard' }"><div class="toggle-knob"></div></div>
-        </div>
-        <div class="settings-toggle-row" @click="inputMode = 'voice'">
-          <span>voice</span>
-          <div class="toggle-switch" :class="{ 'is-active': inputMode === 'voice' }"><div class="toggle-knob"></div></div>
-        </div>
-        <div class="settings-toggle-row" @click="inputMode = 'tap'">
-          <span>tap</span>
-          <div class="toggle-switch" :class="{ 'is-active': inputMode === 'tap' }"><div class="toggle-knob"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Theme Selection Overlay -->
-    <div class="overlay-menu-container" :class="{ 'is-open': themeOpen }" style="z-index: 15;">
-      <div class="back-arrow-fixed" @click="themeOpen = false">←</div>
-      <div class="overlay-menu-content" style="row-gap: 3vh;">
-        <div v-for="t in themes" :key="t.id" 
-             class="theme-circle" 
-             :class="{ 'is-selected': currentTheme === t.id }" 
-             :style="{ backgroundColor: t.color }"
-             @click="currentTheme = t.id">
-        </div>
-      </div>
-      <div class="theme-name-display">{{ currentThemeName }}</div>
-    </div>
-
-    <div class="overlay-menu-container" :class="{ 'is-open': listOpen }">
-      <div class="back-arrow-fixed" @click="listOpen = false">←</div>
-      <div class="overlay-menu-content">
-        
-        <!-- Render Standard Lists -->
-        <template v-for="(name, id) in availableLists" :key="id">
-          <div class="menu-item" v-if="!id.startsWith('n') && id !== 'starred'" @click="selectList(id)">
-            {{ name }}
+        <div class="modal-content">
+          <div class="section">
+            <div class="controls">
+              <button class="secondary-btn" @click="transitionToKanaMenu">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+                edit kana
+              </button>
+              <button class="secondary-btn" @click="resetList">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                reset list
+              </button>
+            </div>
+            <div class="controls" style="margin-top: 10px;">
+              <button class="secondary-btn" @click="openStats">stats</button>
+              <button class="secondary-btn" @click="openAbout">about</button>
+            </div>
           </div>
-        </template>
 
-        <!-- Static N Levels Row -->
-        <div class="n-levels-row">
-          <div class="n-level-btn" @click="selectList('n5')">N5</div>
-          <div class="n-level-btn" @click="selectList('n4')">N4</div>
-          <div class="n-level-btn" @click="selectList('n3')">N3</div>
-          <div class="n-level-btn" @click="selectList('n2')">N2</div>
-          <div class="n-level-btn" @click="selectList('n1')">N1</div>
+          <div class="section">
+            <h3 class="section-label">active list</h3>
+            <div class="list-selection">
+              <button class="list-btn full-width" :class="{ active: wordFilter === 'all' }" @click="selectList('all')">all words</button>
+              <div class="list-grid">
+                <template v-for="(name, id) in availableLists" :key="id">
+                  <button v-if="isStandardList(id)" class="list-btn" :class="{ active: wordFilter === id }" @click="selectList(id)">{{ name }}</button>
+                </template>
+              </div>
+              <div class="list-selection-row">
+                <button v-show="starsSetting" class="list-btn" :class="{ active: wordFilter === 'starred' }" @click="selectList('starred')" aria-label="starred">
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" :fill="wordFilter === 'starred' ? 'currentColor' : 'none'" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </button>
+                <button class="list-btn uppercase-text" :class="{ active: wordFilter === 'n5' }" @click="selectList('n5')">N5</button>
+                <button class="list-btn uppercase-text" :class="{ active: wordFilter === 'n4' }" @click="selectList('n4')">N4</button>
+                <button class="list-btn uppercase-text" :class="{ active: wordFilter === 'n3' }" @click="selectList('n3')">N3</button>
+                <button class="list-btn uppercase-text" :class="{ active: wordFilter === 'n2' }" @click="selectList('n2')">N2</button>
+                <button class="list-btn uppercase-text" :class="{ active: wordFilter === 'n1' }" @click="selectList('n1')">N1</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3 class="section-label">input mode</h3>
+            <div class="list-grid">
+              <button class="list-btn" :class="{ active: inputMode === 'automatic' }" @click="inputMode = 'automatic'">automatic</button>
+              <button class="list-btn" :class="{ active: inputMode === 'keyboard' }" @click="inputMode = 'keyboard'">keyboard</button>
+              <button class="list-btn" :class="{ active: inputMode === 'voice' }" @click="inputMode = 'voice'">voice</button>
+              <button class="list-btn" :class="{ active: inputMode === 'tap' }" @click="inputMode = 'tap'">tap</button>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3 class="section-label">themes</h3>
+            <div class="theme-grid">
+              <button v-for="t in themes" :key="t.id"
+                      class="theme-btn"
+                      :class="{ active: currentTheme === t.id }"
+                      :style="{ background: t.color, color: t.textColor }"
+                      @click="currentTheme = t.id">
+                {{ t.name }}
+              </button>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3 class="section-label">display</h3>
+            <div class="settings-toggle-row" @click="showKanjiSetting = !showKanjiSetting">
+              <span>show kanji</span>
+              <div class="toggle-switch" :class="{ 'is-active': showKanjiSetting }"><div class="toggle-knob"></div></div>
+            </div>
+            <div v-if="showKanjiSetting" class="settings-toggle-row" @click="kanjiOnlySetting = !kanjiOnlySetting">
+              <span>kanji only</span>
+              <div class="toggle-switch" :class="{ 'is-active': kanjiOnlySetting }"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row" @click="speakerSetting = !speakerSetting">
+              <span>speaker</span>
+              <div class="toggle-switch" :class="{ 'is-active': speakerSetting }"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row" @click="starsSetting = !starsSetting">
+              <span>stars</span>
+              <div class="toggle-switch" :class="{ 'is-active': starsSetting }"><div class="toggle-knob"></div></div>
+            </div>
+          </div>
+
         </div>
-
-        <!-- Render Starred List -->
-        <div class="menu-item" v-show="starsSetting" @click="selectList('starred')">
-          <svg class="ui-star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-        </div>
-
       </div>
     </div>
 
-    <div class="overlay-menu-container" :class="{ 'is-open': statsOpen }" style="z-index: 15;">
-      <div class="back-arrow-fixed" @click="closeStats">←</div>
-      <div class="overlay-menu-content" style="row-gap: 20px;">
-        <div class="stats-row"><span class="stats-label">total words</span><span class="stats-value">{{ stats.totalWords }}</span></div>
-        <div class="stats-row"><span class="stats-label">best streak</span><span class="stats-value">{{ stats.bestStreak }}</span></div>
-        <div class="stats-row"><span class="stats-label">correct</span><span class="stats-value">{{ stats.correct }}</span></div>
-        <div class="stats-row"><span class="stats-label">mistakes</span><span class="stats-value">{{ stats.mistakes }}</span></div>
-        <div class="stats-row"><span class="stats-label">accuracy</span><span class="stats-value">{{ accuracyDisplay }}</span></div>
-        <div class="stats-row"><span class="stats-label">active kana</span><span class="stats-value">{{ activeKanaDisplay }}</span></div>
-        <div class="stats-row"><span class="stats-label">top word</span><span class="stats-value">{{ topWordDisplay }}</span></div>
-        <div class="stats-row"><span class="stats-label">days active</span><span class="stats-value">{{ stats.daysActive }}</span></div>
-        <div class="stats-row"><span class="stats-label">time logged</span><span class="stats-value">{{ timeLoggedDisplay }}</span></div>
-        
-        <div class="menu-item" style="margin-top: 10px;" @click="openAchievements">achievements</div>
-      </div>
-      <div class="settings-button-bottom" @click="resetStats">reset</div>
-    </div>
-
-    <!-- Achievements Overlay -->
-    <div class="overlay-menu-container" :class="{ 'is-open': achievementsOpen }" style="z-index: 20;">
-      <div class="back-arrow-fixed" @click="closeAchievements">←</div>
-      <div class="overlay-menu-content" style="row-gap: 20px;">
-        <div class="stats-row" v-for="ach in achievements" :key="ach.label" :style="{ color: ach.completed ? 'var(--text-color-darker)' : 'var(--text-color-light)' }">
-          <span style="font-size: 1.8vh; text-transform: lowercase;">{{ ach.label }}</span>
-          <svg class="achievement-star" :class="{ 'is-completed': ach.completed }" viewBox="0 0 24 24" :fill="ach.completed ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
+    <!-- ============================= stats modal ============================= -->
+    <div v-if="statsOpen" class="modal-overlay" @click.self="closeStats">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>stats</h2>
+          <button class="close-btn" @click="closeStats">&times;</button>
+        </div>
+        <div class="stats-list">
+          <div class="stats-row"><span class="stats-label">total words</span><span class="stats-value">{{ stats.totalWords }}</span></div>
+          <div class="stats-row"><span class="stats-label">best streak</span><span class="stats-value">{{ stats.bestStreak }}</span></div>
+          <div class="stats-row"><span class="stats-label">correct</span><span class="stats-value">{{ stats.correct }}</span></div>
+          <div class="stats-row"><span class="stats-label">mistakes</span><span class="stats-value">{{ stats.mistakes }}</span></div>
+          <div class="stats-row"><span class="stats-label">accuracy</span><span class="stats-value">{{ accuracyDisplay }}</span></div>
+          <div class="stats-row"><span class="stats-label">active kana</span><span class="stats-value">{{ activeKanaDisplay }}</span></div>
+          <div class="stats-row"><span class="stats-label">top word</span><span class="stats-value">{{ topWordDisplay }}</span></div>
+          <div class="stats-row"><span class="stats-label">days active</span><span class="stats-value">{{ stats.daysActive }}</span></div>
+          <div class="stats-row"><span class="stats-label">time logged</span><span class="stats-value">{{ timeLoggedDisplay }}</span></div>
+        </div>
+        <div class="controls" style="margin-top: 10px;">
+          <button class="secondary-btn" @click="openAchievements">achievements</button>
+          <button class="secondary-btn" @click="resetStats">reset</button>
         </div>
       </div>
     </div>
 
-    <!-- About Overlay -->
-    <div class="overlay-menu-container" :class="{ 'is-open': aboutOpen }" style="z-index: 15;">
-      <div class="back-arrow-fixed" @click="aboutOpen = false">←</div>
-      <div class="overlay-menu-content" style="padding: 0 5vw; text-align: center;">
-        <div style="font-size: 1.1em; line-height: 1.6; color: var(--text-color); font-weight: 300; max-width: 350px; display: flex; flex-direction: column; gap: 2vh; align-items: center;">
-          <div style="font-size: 1.6em; letter-spacing: .2em;">about</div>
+    <!-- ============================= achievements modal ============================= -->
+    <div v-if="achievementsOpen" class="modal-overlay" @click.self="closeAchievements">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>achievements</h2>
+          <button class="close-btn" @click="closeAchievements">&times;</button>
+        </div>
+        <div class="stats-list">
+          <div class="stats-row achievement-row" v-for="ach in achievements" :key="ach.label" :class="{ 'is-completed': ach.completed }">
+            <span class="stats-label">{{ ach.label }}</span>
+            <svg class="achievement-star" viewBox="0 0 24 24" :fill="ach.completed ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================= about modal ============================= -->
+    <div v-if="aboutOpen" class="modal-overlay" @click.self="closeAbout">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>about</h2>
+          <button class="close-btn" @click="closeAbout">&times;</button>
+        </div>
+        <div class="about-text">
           <div>learn to read japanese while you pretend to do your job with kana.build</div>
           <div>simply select a wordlist and the characters you want to practice to get started</div>
-          <div>kana.build is entirely open source and you can explore our code on <a href="https://github.com/prestonjcrowe/kana.build" target="_blank" style="color: var(--text-color-darker); text-decoration: none; border-bottom: 1px solid var(--text-color-darker);">github</a></div>
+          <div>kana.build is entirely open source and you can explore our code on <a href="https://github.com/prestonjcrowe/kana.build" target="_blank">github</a></div>
           <div>
             if you like the project, consider<br>
-            <a href="https://buymeacoffee.com/kana.build" target="_blank" style="color: var(--text-color-darker); text-decoration: none; border-bottom: 1px solid var(--text-color-darker);">buying us a coffee</a> <span style="white-space: nowrap;">(っ-,-)つ☕︎</span>
+            <a href="https://buymeacoffee.com/kana.build" target="_blank">buying us a coffee</a> <span style="white-space: nowrap;">(っ-,-)つ☕︎</span>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- ============================= kana editor ============================= -->
     <div class="kana-menu-container" :class="{ 'is-open': kanaOpen }">
-      <div class="kana-menu-controls-container">
-        <div class="kana-menu-exit-button" @click="closeKanaMenu">←</div>
-        <div class="kana-menu-alphabet-button" @click="toggleAlphabet">{{ alphabet }} ⇄</div>
-        <div class="kana-menu-list-button" @click="toggleSelectAll">{{ isAllSelected ? '●' : '○' }}</div>
-      </div>
-      <div class="kana-character-menu-container"
-           @pointerdown="startDrag" 
-           @pointermove="handleDrag" 
-           @pointerup="stopDrag"
-           @pointerleave="stopDrag"
-           @pointercancel="stopDrag">
-        <div v-for="(char, index) in (alphabet === 'hiragana' ? hChars : kChars)" :key="index">
-          <div v-if="char === ' '"></div>
-          <div v-else-if="!isKana(char)" class="kana-menu-romaji-label" @click.stop="toggleGroup(char)">{{ char }}</div>
-          <div v-else class="kana-menu-character" :class="{ 'selected-kana': selectedKana.has(char) }" :data-char="char">{{ char }}</div>
+      <div class="panel kana-panel">
+        <div class="modal-header">
+          <h2>edit kana</h2>
+          <button class="close-btn" @click="closeKanaMenu">&times;</button>
+        </div>
+
+        <div class="kana-menu-controls-container">
+          <button class="list-btn" @click="toggleAlphabet">{{ alphabet }} ⇄</button>
+          <button class="list-btn" @click="toggleSelectAll">{{ isAllSelected ? 'clear all' : 'select all' }}</button>
+        </div>
+
+        <div class="kana-character-menu-container"
+             @pointerdown="startDrag"
+             @pointermove="handleDrag"
+             @pointerup="stopDrag"
+             @pointerleave="stopDrag"
+             @pointercancel="stopDrag">
+          <div v-for="(char, index) in (alphabet === 'hiragana' ? hChars : kChars)" :key="index">
+            <div v-if="char === ' '"></div>
+            <div v-else-if="!isKana(char)" class="kana-menu-romaji-label" @click.stop="toggleGroup(char)">{{ char }}</div>
+            <div v-else class="kana-menu-character" :class="{ 'selected-kana': selectedKana.has(char) }" :data-char="char">{{ char }}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -634,7 +1032,8 @@
       setup() {
         // --- REFS & STATE ---
         const dictionary = ref([]), wordList = ref([]), activeWordIndex = ref(0), showDetails = ref(false), userInput = ref("");
-        const loading = ref(true), listOpen = ref(false), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), inputModeOpen = ref(false), themeOpen = ref(false), kanaOpen = ref(false), aboutOpen = ref(false);
+        const loading = ref(true), settingsOpen = ref(false), statsOpen = ref(false), achievementsOpen = ref(false), kanaOpen = ref(false), aboutOpen = ref(false);
+        const kanaFromSettings = ref(false);
         const keyboardInputSetting = ref(false), vocalInputSetting = ref(false), selfGradeSetting = ref(false), showKanjiSetting = ref(false), kanjiOnlySetting = ref(false);
         const speakerSetting = ref(localStorage.getItem('speakerSetting') === null ? true : localStorage.getItem('speakerSetting') === 'true');
         const starsSetting = ref(localStorage.getItem('starsSetting') === null ? true : localStorage.getItem('starsSetting') === 'true');
@@ -689,15 +1088,16 @@
 
         const availableLists = { all: 'all words', everyday: 'everyday', animals: 'animals', ideophones: 'ideophones', common_verbs: 'common verbs', food_and_drinks: 'food and drinks', kanji_radicals: 'kanji radicals', n5: 'N5', n4: 'N4', n3: 'N3', n2: 'N2', n1: 'N1', starred: 'starred' };
 
+        // Swatch colors mirror kanji.build's --card-bg / --text for each theme
         const themes = [
-          { id: 'light', color: '#ffffff', name: 'light' },
-          { id: 'dark', color: '#1a1a1a', name: 'dark' },
-          { id: 'steam', color: 'rgb(60, 68, 55)', name: 'スチーム' },
-          { id: 'matcha', color: '#7b9468', name: 'まっちゃ' },
-          { id: 'oyasumi', color: '#4a5e78', name: 'おやすみ' },
-          { id: 'coffee', color: '#8a6b58', name: 'コーヒー' },
-          { id: 'mikan', color: '#c76d4a', name: 'みかん' },
-          { id: 'sakura', color: '#d18ca8', name: 'さくら' }
+          { id: 'light', name: 'light', color: '#ffffff', textColor: '#1f2937' },
+          { id: 'dark', name: 'dark', color: '#2d2d2d', textColor: '#f3f4f6' },
+          { id: 'matcha', name: 'まっちゃ', color: '#f1f5e8', textColor: '#2d3a24' },
+          { id: 'steam', name: 'スチーム', color: '#5e6a55', textColor: '#eef1ea' },
+          { id: 'sakura', name: 'さくら', color: '#fff0f5', textColor: '#5c3041' },
+          { id: 'oyasumi', name: 'おやすみ', color: '#292e3a', textColor: '#c8d1e0' },
+          { id: 'coffee', name: 'コーヒー', color: '#5c473f', textColor: '#e8dcd8' },
+          { id: 'mikan', name: 'みかん', color: '#fff2ec', textColor: '#5c3e2e' }
         ];
 
         // --- SPEECH RECOGNITION ---
@@ -801,6 +1201,12 @@
         const hasTypingErrors = computed(() => userInput.value.length > 0 && feedbackChars.value.some(c => !c.match));
         const isStarred = computed(() => starredWords.has(activeWord.value));
         const currentListName = computed(() => availableLists[wordFilter.value]);
+
+        const N_LEVELS = ['n1', 'n2', 'n3', 'n4', 'n5'];
+        const isNLevel = (id) => N_LEVELS.includes(id);
+        // The named wordlists — everything that isn't "all", "starred" or an N level,
+        // so they can be laid out separately in the settings modal.
+        const isStandardList = (id) => id !== 'all' && id !== 'starred' && !isNLevel(id);
         
         const isAllSelected = computed(() => {
           const valid = (alphabet.value === 'hiragana' ? hChars : kChars).filter(c => c !== " " && wanakana.isKana(c));
@@ -881,18 +1287,10 @@
 
         // --- THEME ENGINE ---
         const applyTheme = (themeId) => {
-          themes.forEach(t => {
-            document.body.classList.remove(`theme-${t.id}`);
-            document.documentElement.classList.remove(`theme-${t.id}`);
-          });
-          
-          if (themeId !== 'light') {
-            document.body.classList.add(`theme-${themeId}`);
-            document.documentElement.classList.add(`theme-${themeId}`);
-          }
-          
+          document.documentElement.setAttribute('data-theme', themeId);
+
           const themeColors = {
-            'light': '#ffffff',
+            'light': '#f3f4f6',
             'dark': '#1a1a1a',
             'matcha': '#e2e8d3',
             'steam': '#4c5844',
@@ -976,8 +1374,7 @@
                currentCSV.value = raw.map(r => ({ expression: r[0], reading: r[1], meaning: r[2] }));
             }
           } else { currentCSV.value = []; }
-          updateWords(); 
-          listOpen.value = false;
+          updateWords();
         };
 
         const nextWord = () => {
@@ -1120,14 +1517,23 @@
           showDetails.value = true;
         };
 
-        const resetList = () => { updateWords(); settingsOpen.value = false; listOpen.value = false; };
-        const openStats = () => { statsOpen.value = true; };
-        const closeStats = () => { statsOpen.value = false; };
-        const openAchievements = () => { achievementsOpen.value = true; };
-        const closeAchievements = () => { achievementsOpen.value = false; };
-        const transitionToKanaMenu = () => { kanaOpen.value = true; setTimeout(() => { settingsOpen.value = false; }, 400); };
-        const openKanaMenuDirect = () => { kanaOpen.value = true; };
-        const closeKanaMenu = () => { kanaOpen.value = false; if (keyboardInputSetting.value) nextTick(() => keyboardTrigger.value?.focus()); };
+        const resetList = () => { updateWords(); settingsOpen.value = false; };
+        // Sub-screens replace the settings modal rather than stacking on it,
+        // and closing one steps back to where it was opened from.
+        const openStats = () => { settingsOpen.value = false; statsOpen.value = true; };
+        const closeStats = () => { statsOpen.value = false; settingsOpen.value = true; };
+        const openAchievements = () => { statsOpen.value = false; achievementsOpen.value = true; };
+        const closeAchievements = () => { achievementsOpen.value = false; statsOpen.value = true; };
+        const openAbout = () => { settingsOpen.value = false; aboutOpen.value = true; };
+        const closeAbout = () => { aboutOpen.value = false; settingsOpen.value = true; };
+        // Opened from settings, so returning from the kana editor should land back there.
+        const transitionToKanaMenu = () => { kanaFromSettings.value = true; settingsOpen.value = false; kanaOpen.value = true; };
+        const openKanaMenuDirect = () => { kanaFromSettings.value = false; kanaOpen.value = true; };
+        const closeKanaMenu = () => {
+          kanaOpen.value = false;
+          if (kanaFromSettings.value) { kanaFromSettings.value = false; settingsOpen.value = true; return; }
+          if (keyboardInputSetting.value) nextTick(() => keyboardTrigger.value?.focus());
+        };
         const toggleAlphabet = () => { alphabet.value = alphabet.value === 'hiragana' ? 'katakana' : 'hiragana'; };
         
         const toggleSelectAll = () => {
@@ -1170,7 +1576,7 @@
           selfGradeSetting.value = localStorage.getItem('selfGradeSetting') === 'true';
 
           window.addEventListener('keydown', (e) => { 
-             if (settingsOpen.value || listOpen.value || kanaOpen.value || statsOpen.value || achievementsOpen.value || inputModeOpen.value || themeOpen.value || aboutOpen.value) return; 
+             if (settingsOpen.value || kanaOpen.value || statsOpen.value || achievementsOpen.value || aboutOpen.value) return;
              if (keyboardInputSetting.value && !showDetails.value) keyboardTrigger.value?.focus(); 
              else if (e.code === 'Space') handleScreenTap(); 
           });
@@ -1251,11 +1657,11 @@
         }, { deep: true });
 
         return { 
-          dictionary, wordList, activeWordIndex, showDetails, userInput, loading, listOpen, settingsOpen, statsOpen, achievementsOpen, inputModeOpen, themeOpen, kanaOpen, aboutOpen,
-          keyboardInputSetting, vocalInputSetting, selfGradeSetting, selfGradeResult, showKanjiSetting, kanjiOnlySetting, speakerSetting, starsSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists, 
-          activeWord, activeKanji, activeDefinition, isStarred, currentListName, feedbackChars, hasTypingErrors, stats, achievements, isRecording, inputMode,
+          dictionary, wordList, activeWordIndex, showDetails, userInput, loading, settingsOpen, statsOpen, achievementsOpen, kanaOpen, aboutOpen,
+          keyboardInputSetting, vocalInputSetting, selfGradeSetting, selfGradeResult, showKanjiSetting, kanjiOnlySetting, speakerSetting, starsSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists,
+          activeWord, activeKanji, activeDefinition, isStarred, currentListName, isNLevel, isStandardList, feedbackChars, hasTypingErrors, stats, achievements, isRecording, inputMode,
           themes, currentTheme, currentThemeName,
-          accuracyDisplay, activeKanaDisplay, topWordDisplay, timeLoggedDisplay, resetList, openStats, closeStats, openAchievements, closeAchievements, resetStats,
+          accuracyDisplay, activeKanaDisplay, topWordDisplay, timeLoggedDisplay, resetList, openStats, closeStats, openAchievements, closeAchievements, openAbout, closeAbout, resetStats,
           handleEnter, handleSelfGrade, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, isAllSelected, toggleSelectAll, closeKanaMenu, isKeyboardOpen, startDrag, handleDrag, stopDrag, 
           transitionToKanaMenu, openKanaMenuDirect, isKana: wanakana.isKana, toggleAlphabet, toggleGroup,
           activeRomajiTarget, activeRomajiDisplay, startRecording, stopRecording, speakWord
