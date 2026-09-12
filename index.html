@@ -195,9 +195,11 @@
 
     #app {
       height: 100%;
-      max-width: 600px;
+      /* 640 - 40px of side padding = a 600px card, matching kanji.build, which
+         carries its side padding on <body> rather than inside the 600px column */
+      max-width: 640px;
       margin: 0 auto;
-      padding: 56px 20px 76px;
+      padding: 60px 20px 76px;
       display: flex;
       flex-direction: column;
       transition: padding 0.3s ease;
@@ -409,7 +411,16 @@
     /* ------------------------------------------------------------------
        study panel
        ------------------------------------------------------------------ */
-    .study-panel { flex: 1; min-height: 0; cursor: pointer; }
+    /* fills the viewport so tap-to-advance still works below the card,
+       while the card itself stays the size of kanji.build's panel */
+    .study-area {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .study-panel { height: 506px; max-height: 100%; }
 
     .deck-header {
       display: flex;
@@ -575,7 +586,17 @@
       font-size: 13px;
       white-space: nowrap;
     }
-    .streak-value { color: var(--primary); }
+    .streak-value { color: var(--primary); display: inline-block; }
+    /* flourish on each correct answer — part of the toasts/gamification block */
+    .streak-value.is-pulsing { animation: streak-pop .38s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes streak-pop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.45); }
+      100% { transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .streak-value.is-pulsing { animation: none; }
+    }
 
     .kaomoji {
       color: var(--text-muted);
@@ -700,15 +721,64 @@
       background-color: var(--primary);
       color: white;
     }
+
+    /* ==================================================================
+       ACHIEVEMENT TOASTS — self-contained, safe to delete as one block
+       ================================================================== */
+    .toast-layer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px;
+      z-index: 1500;
+      pointer-events: none;
+    }
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      font-size: 14px;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+    .toast-icon { font-size: 18px; text-transform: none; line-height: 1; }
+    .toast-label { overflow: hidden; text-overflow: ellipsis; }
+
+    /* rise from below, hold, then sink back down */
+    .toast-enter-active { transition: transform .45s cubic-bezier(0.25, 1, 0.5, 1), opacity .3s ease; }
+    .toast-leave-active { transition: transform .45s cubic-bezier(0.4, 0, 1, 1), opacity .4s ease; }
+    .toast-enter-from,
+    .toast-leave-to { transform: translateY(140%); opacity: 0; }
+    .toast-move { transition: transform .3s ease; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toast-enter-active, .toast-leave-active, .toast-move { transition: opacity .2s ease; }
+      .toast-enter-from, .toast-leave-to { transform: none; opacity: 0; }
+    }
+    /* ================= end achievement toasts ================= */
   </style>
 </head>
 <body>
 
   <div id="app" :class="{ 'is-keyboard-open': isKeyboardOpen }">
-    <input type="text" ref="keyboardTrigger" class="hidden-input" v-model="userInput" @keydown.enter="handleEnter" autocapitalize="none" />
+    <!-- space never belongs in a romaji answer, and it doubles as "advance card" —
+         swallow it here so it can't land in the box as an invisible character -->
+    <input type="text" ref="keyboardTrigger" class="hidden-input" v-model="userInput" @keydown.enter="handleEnter" @keydown.space.prevent autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" />
 
     <!-- ============================= study panel ============================= -->
-    <div class="panel study-panel" @click="handleScreenTap">
+    <div class="study-area" @click="handleScreenTap">
+    <div class="panel study-panel">
       <div class="deck-header">
         <div class="kaomoji header-kaomoji">{{ subtitle }}</div>
         <button class="header-icon-btn" @click.stop="openKanaMenuDirect" aria-label="edit kana">
@@ -741,7 +811,7 @@
               <template v-else-if="showDetails">
                 <template v-if="keyboardInputSetting">
                   <span v-for="(char, i) in feedbackChars" :key="i" :class="char.match ? 'char-match' : 'char-error'">{{ char.val }}</span>
-                  <span class="correction-hint" v-if="hasTypingErrors && activeRomajiTarget">({{ activeRomajiTarget }})</span>
+                  <span class="correction-hint" v-if="!isAnswerCorrect && activeRomajiTarget">({{ activeRomajiTarget }})</span>
                 </template>
                 <template v-else>
                   <span>{{ activeRomajiDisplay }}</span>
@@ -788,12 +858,13 @@
 
       <div class="study-footer">
         <div class="streak-display" v-if="keyboardInputSetting || selfGradeSetting || vocalInputSetting">
-          streak: <span class="streak-value">{{ streak }}</span>
+          streak: <span class="streak-value" :class="{ 'is-pulsing': streakPulse }">{{ streak }}</span>
         </div>
         <div class="deck-count" v-if="wordFilter !== 'all' && wordList.length > 0">
           {{ activeWordIndex + 1 }}/{{ wordList.length }}
         </div>
       </div>
+    </div>
     </div>
 
     <!-- ============================= settings trigger ============================= -->
@@ -995,6 +1066,14 @@
         </div>
       </div>
     </div>
+
+    <!-- ============ achievement toasts — delete this block to remove ============ -->
+    <transition-group name="toast" tag="div" class="toast-layer">
+      <div class="toast" v-for="t in toasts" :key="t.id">
+        <span class="toast-icon">{{ t.icon }}</span>
+        <span class="toast-label">{{ t.label }}</span>
+      </div>
+    </transition-group>
   </div>
 
   <script>
@@ -1129,6 +1208,10 @@
             initialLastVisit = todayStr;
         }
 
+        // First load of a new day, for someone who has been here before. Used only
+        // by the daily-streak toast — drop this line if removing toasts.
+        const isNewDayVisit = Boolean(localStats.lastVisitDate) && localStats.lastVisitDate !== todayStr;
+
         const stats = reactive({
           totalWords: localStats.totalWords || 0, 
           bestStreak: localStats.bestStreak || 0, 
@@ -1152,8 +1235,9 @@
 
         const resetStats = () => { 
           Object.assign(stats, { totalWords: 0, bestStreak: 0, correct: 0, mistakes: 0, wordFrequency: {}, timeLoggedSeconds: 0, completedLists: [], fullHiraganaWordsSeen: 0, fullKatakanaWordsSeen: 0, daysActive: 1, lastVisitDate: new Date().toDateString() }); 
-          saveStats(); 
+          saveStats();
           streak.value = 0;
+          resetToastHistory(); // toasts only — drop this line if removing them
         };
 
         const trackWordAppearance = (word) => {
@@ -1191,14 +1275,27 @@
             });
         };
 
+        // Strip whitespace the same way the target does. A stray space — mobile
+        // predictive text, or the spacebar used to advance — would otherwise shift
+        // every character one slot and fail an answer that was actually correct.
+        const typedRomaji = computed(() => userInput.value.replace(/\s/g, '').toLowerCase());
+
         const feedbackChars = computed(() => {
           if (!keyboardInputSetting.value) return [];
-          const input = userInput.value.toLowerCase();
+          const input = typedRomaji.value;
           const target = activeWordData.value ? getRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "";
           return input.split('').map((char, i) => ({ val: char, match: char === target[i] }));
         });
 
-        const hasTypingErrors = computed(() => userInput.value.length > 0 && feedbackChars.value.some(c => !c.match));
+        const hasTypingErrors = computed(() => typedRomaji.value.length > 0 && feedbackChars.value.some(c => !c.match));
+
+        // A correct answer is the whole word, not just a correct beginning —
+        // hasTypingErrors alone would pass "e" for えいが, since it only checks the
+        // characters actually typed against the matching prefix of the target.
+        const isAnswerCorrect = computed(() => {
+          const target = activeRomajiTarget.value;
+          return target.length > 0 && typedRomaji.value === target;
+        });
         const isStarred = computed(() => starredWords.has(activeWord.value));
         const currentListName = computed(() => availableLists[wordFilter.value]);
 
@@ -1255,6 +1352,89 @@
                 { label: 'study for 1 hour', completed: stats.timeLoggedSeconds >= 3600 }
             ];
         });
+
+        /* ============ achievement toasts — delete this block to remove ============ */
+        const toasts = ref([]);
+        const TOAST_MS = 2400;
+        let toastSeq = 0;
+
+        const showToast = (icon, label) => {
+            const id = ++toastSeq;
+            toasts.value.push({ id, icon, label });
+            if (toasts.value.length > 3) toasts.value.shift();
+            setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id); }, TOAST_MS);
+        };
+
+        // Seeded from saved stats so a reload doesn't replay everything already earned.
+        const seenAchievements = new Set(achievements.value.filter(a => a.completed).map(a => a.label));
+
+        // Streak milestones are handled below rather than by the achievement watcher:
+        // the trophy fires the first time only, and every later run past the same
+        // number gets a flame instead, so a good run always gets acknowledged.
+        const STREAK_MILESTONES = [5, 10, 25, 50, 100];
+        const streakBadged = new Set(STREAK_MILESTONES.filter(m => stats.bestStreak >= m));
+        const resetToastHistory = () => { seenAchievements.clear(); streakBadged.clear(); };
+
+        watch(achievements, (list) => {
+            for (const a of list) {
+                if (!a.completed || seenAchievements.has(a.label)) continue;
+                seenAchievements.add(a.label);
+                if (!a.label.startsWith('streak of')) showToast('🏆', a.label);
+            }
+        });
+
+        // Personal best is announced once per run. bestToBeat is captured when a run
+        // starts, because stats.bestStreak has already been raised to the new value
+        // by the time this watcher sees the increment.
+        let bestToBeat = stats.bestStreak;
+        let announcedBest = false;
+        const BEST_FLOURISH_FLOOR = 5; // below this, "new best" is meaningless
+
+        const streakPulse = ref(false);
+        let streakPulseTimer = null;
+
+        watch(streak, (v, prev) => {
+            if (v <= prev) {
+                // run ended — the next one aims at the updated all-time best
+                bestToBeat = stats.bestStreak;
+                announcedBest = false;
+                return;
+            }
+
+            // flourish on the counter itself, every correct answer
+            streakPulse.value = true;
+            clearTimeout(streakPulseTimer);
+            streakPulseTimer = setTimeout(() => { streakPulse.value = false; }, 380);
+
+            const isBadge = STREAK_MILESTONES.includes(v);
+            const isMilestone = isBadge || (v > 100 && v % 50 === 0);
+
+            if (isMilestone) {
+                if (isBadge && !streakBadged.has(v)) {
+                    streakBadged.add(v);
+                    showToast('🏆', `streak of ${v}`);
+                } else {
+                    showToast('🔥', `streak of ${v}`);
+                }
+            }
+
+            // A milestone already covers the moment; don't stack two toasts on it.
+            if (!isMilestone && !announcedBest && bestToBeat >= BEST_FLOURISH_FLOOR && v > bestToBeat) {
+                announcedBest = true;
+                showToast('🔥', 'new best!');
+            }
+        });
+
+        // Daily visit streak, once on the first load of a new day.
+        if (isNewDayVisit) {
+            onMounted(() => {
+                setTimeout(() => {
+                    const n = stats.daysActive;
+                    showToast('☀️', n === 1 ? 'day 1' : `${n} day streak`);
+                }, 1000);
+            });
+        }
+        /* ================= end achievement toasts ================= */
 
         const activeRomajiTarget = computed(() => activeWordData.value ? getRomaji(activeWordData.value.text).replace(/\s/g, '').toLowerCase() : "");
         const activeRomajiDisplay = computed(() => activeWordData.value ? getRomaji(activeWordData.value.text) : "");
@@ -1348,8 +1528,12 @@
           const filtered = sourceList.filter(w => {
             if (kanjiOnlySetting.value && (!w.kanji || !/[\u4e00-\u9faf]/.test(w.kanji))) return false;
             for (let c of w.text) { 
-              if (c === "ー" || c === " " || !wanakana.isKana(c)) continue;
-              const norm = c.replace(/[ゃゅょぁぃぅぇぉャュョァィゥェォっッ]/, (m) => ({'ゃ':'や','ゅ':'ゆ','ょ':'よ','ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','ャ':'ヤ','ュ':'ユ','ョ':'ヨ','ァ':'ア','ィ':'イ','ゥ':'ウ','ェ':'エ','ォ':'オ', 'っ':'つ', 'ッ':'ツ'}[m] || m));
+              // ー lengthens and っ/ッ doubles — both are silent marks rather than
+              // sounds, so neither should require its own kana to be selected.
+              // (っ used to normalise to つ, which hid every double-consonant word
+              // from anyone who hadn't learned つ yet.)
+              if (c === "ー" || c === "っ" || c === "ッ" || c === " " || !wanakana.isKana(c)) continue;
+              const norm = c.replace(/[ゃゅょぁぃぅぇぉャュョァィゥェォ]/, (m) => ({'ゃ':'や','ゅ':'ゆ','ょ':'よ','ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お','ャ':'ヤ','ュ':'ユ','ョ':'ヨ','ァ':'ア','ィ':'イ','ゥ':'ウ','ェ':'エ','ォ':'オ'}[m] || m));
               if (!selectedKana.has(norm)) return false;
             }
             return true;
@@ -1409,7 +1593,7 @@
           if (!keyboardInputSetting.value || wordList.value.length === 0) return;
           if (showDetails.value) nextWord();
           else {
-            if (!hasTypingErrors.value && userInput.value.length > 0) { 
+            if (isAnswerCorrect.value) {
               streak.value++; stats.correct++;
               if (streak.value > stats.bestStreak) stats.bestStreak = streak.value;
               correctSound.currentTime = 0; correctSound.play().catch(e => {}); 
@@ -1643,6 +1827,14 @@
           localStorage.setItem('starsSetting', starsSetting.value);
         });
         
+        // Keep whitespace out of the answer box entirely. The keydown guard on the
+        // input only catches a real spacebar press; predictive text and paste insert
+        // characters without firing keydown, so scrub the value itself as well.
+        watch(userInput, (v) => {
+          const clean = v.replace(/\s/g, '');
+          if (clean !== v) userInput.value = clean;
+        });
+
         watch(streak, (v) => localStorage.setItem('currentStreak', v.toString()));
         watch(kanjiOnlySetting, () => updateWords());
         watch(showKanjiSetting, (v) => { if (!v) kanjiOnlySetting.value = false; });
@@ -1659,7 +1851,7 @@
         return { 
           dictionary, wordList, activeWordIndex, showDetails, userInput, loading, settingsOpen, statsOpen, achievementsOpen, kanaOpen, aboutOpen,
           keyboardInputSetting, vocalInputSetting, selfGradeSetting, selfGradeResult, showKanjiSetting, kanjiOnlySetting, speakerSetting, starsSetting, selectedKana, wordFilter, alphabet, hChars, kChars, availableLists,
-          activeWord, activeKanji, activeDefinition, isStarred, currentListName, isNLevel, isStandardList, feedbackChars, hasTypingErrors, stats, achievements, isRecording, inputMode,
+          activeWord, activeKanji, activeDefinition, isStarred, currentListName, isNLevel, isStandardList, feedbackChars, hasTypingErrors, isAnswerCorrect, stats, achievements, isRecording, inputMode, toasts, streakPulse,
           themes, currentTheme, currentThemeName,
           accuracyDisplay, activeKanaDisplay, topWordDisplay, timeLoggedDisplay, resetList, openStats, closeStats, openAchievements, closeAchievements, openAbout, closeAbout, resetStats,
           handleEnter, handleSelfGrade, handleScreenTap, toggleStar, selectList, subtitle, keyboardTrigger, streak, isAllSelected, toggleSelectAll, closeKanaMenu, isKeyboardOpen, startDrag, handleDrag, stopDrag, 
